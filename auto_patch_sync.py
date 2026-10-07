@@ -1,142 +1,173 @@
 import os
 import sys
+import json
 import subprocess
 
 PATCH_FILE = "patch.txt"
+ENV_FILE   = ".env"
+PRODUCTS   = "products.json"
+QUEUE_FILE = "pending_catalog.json"
 
 
+# ─────────────────────────────────────────────────────
+# Load .env (no external deps)
+# ─────────────────────────────────────────────────────
+def load_env():
+    if not os.path.exists(ENV_FILE):
+        return {}
+    env = {}
+    with open(ENV_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            env[k.strip()] = v.strip().strip('"').strip("'")
+    return env
+
+
+# ─────────────────────────────────────────────────────
+# Patch.txt parser (find / replace)
+# ─────────────────────────────────────────────────────
 def parse_patch_file(filepath):
-    """Parses patch blocks: FILE: <name> + <<<<<<< FIND / ======= / >>>>>>>"""
     if not os.path.exists(filepath):
-        print(f"❌ Patch file '{filepath}' not found.")
+        print(f"❌ '{filepath}' not found.")
         return []
-
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
     patches = []
-    sections = content.split("FILE:")
-    for sec in sections:
+    for sec in content.split("FILE:"):
         sec = sec.strip()
         if not sec:
             continue
         lines = sec.splitlines()
         filename = lines[0].strip()
         remaining = "\n".join(lines[1:])
-
-        blocks = remaining.split("<<<<<<< FIND")
-        for blk in blocks:
+        for blk in remaining.split("<<<<<<< FIND"):
             if "=======" in blk and ">>>>>>>" in blk:
                 find_part, rest = blk.split("=======", 1)
                 replace_part, _ = rest.split(">>>>>>>", 1)
-
                 find_str = find_part.strip("\r\n")
                 replace_str = replace_part.strip("\r\n")
-
                 if find_str:
-                    patches.append({
-                        "file": filename,
-                        "find": find_str,
-                        "replace": replace_str
-                    })
+                    patches.append({"file": filename,
+                                    "find": find_str,
+                                    "replace": replace_str})
     return patches
 
 
 def apply_patches(patches):
     if not patches:
-        print("⚠️  No valid patches found in patch file.")
+        print("⚠️  No patches to apply.")
         return 0
-
-    success_count = 0
+    count = 0
     for p in patches:
-        target_file = p["file"]
-        if not os.path.exists(target_file):
-            print(f"❌ Target file '{target_file}' does not exist. Skipping.")
+        tf = p["file"]
+        if not os.path.exists(tf):
+            print(f"❌ Missing file: {tf}")
             continue
-
-        with open(target_file, "r", encoding="utf-8") as f:
-            data = f.read()
-
-        norm_data = data.replace("\r\n", "\n")
-        norm_find = p["find"].replace("\r\n", "\n")
-        norm_replace = p["replace"].replace("\r\n", "\n")
-
-        if norm_data.count(norm_find) > 1:
-            print(f"⚠️  Multiple matches in [{target_file}]. Patching first only.")
-        if norm_find in norm_data:
-            updated = norm_data.replace(norm_find, norm_replace, 1)
-            with open(target_file, "w", encoding="utf-8", newline="\n") as f:
-                f.write(updated)
-            print(f"✅ Patched [{target_file}]")
-            success_count += 1
+        with open(tf, "r", encoding="utf-8") as f:
+            data = f.read().replace("\r\n", "\n")
+        find    = p["find"].replace("\r\n", "\n")
+        replace = p["replace"].replace("\r\n", "\n")
+        if find in data:
+            with open(tf, "w", encoding="utf-8", newline="\n") as f:
+                f.write(data.replace(find, replace, 1))
+            print(f"✅ Patched [{tf}]")
+            count += 1
         else:
-            print(f"❌ Failed to locate block in [{target_file}]")
-            print("   SEARCH SNIPPET:", p["find"][:80].replace("\n", " ⏎ "))
-    return success_count
+            print(f"❌ No match in [{tf}] → {find[:60]!r}")
+    return count
 
 
+# ─────────────────────────────────────────────────────
+# Apply admin queue → products.json
+# ─────────────────────────────────────────────────────
+def apply_admin_queue():
+    if not os.path.exists(QUEUE_FILE):
+        return False
+    try:
+        with open(QUEUE_FILE, "r", encoding="utf-8") as f:
+            incoming = json.load(f)
+    except Exception as e:
+        print(f"⚠️  Bad queue file: {e}")
+        return False
+
+    with open(PRODUCTS, "w", encoding="utf-8") as f:
+        json.dump(incoming, f, indent=2, ensure_ascii=False)
+    os.remove(QUEUE_FILE)
+    print(f"✅ Applied {len(incoming)} product(s) from admin queue → {PRODUCTS}")
+    return True
+
+
+# ─────────────────────────────────────────────────────
+# Git push
+# ─────────────────────────────────────────────────────
 def git_push(commit_msg="Update store via auto-patch"):
-    print("\n🚀 Pushing changes to GitHub...")
+    print("\n🚀 Pushing to GitHub...")
     try:
         subprocess.run(["git", "add", "."], check=True)
         res = subprocess.run(["git", "status", "--porcelain"],
                              capture_output=True, text=True)
         if not res.stdout.strip():
-            print("ℹ️  No changes to commit. Already up to date.")
+            print("ℹ️  Nothing to commit.")
             return
         subprocess.run(["git", "commit", "-m", commit_msg], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
-        print("🎉 Pushed to GitHub! Live in ~20s.")
+        print("🎉 Pushed! GitHub Pages live in ~20s.")
     except subprocess.CalledProcessError as e:
         print("❌ Git error:", e)
 
 
+# ─────────────────────────────────────────────────────
+# Menu
+# ─────────────────────────────────────────────────────
 def menu():
     print("=" * 55)
-    print("🛠️   MAHADEV FASHION HUB — PATCHER & SYNC")
+    print("🛠️   MAHADEV FASHION HUB — BACKEND SYNC")
     print("=" * 55)
     print("  1.  Update files  +  Push to Git")
     print("  2.  Update files only  (no push)")
     print("  3.  Push only          (no patch)")
     print("=" * 55)
-
-    choice = input("👉 Choose an option [1/2/3]: ").strip()
-    return choice
+    return input("👉 Choose [1/2/3]: ").strip()
 
 
 def main():
-    choice = menu()
+    env = load_env()
+    if not env.get("GITHUB_USER") or not env.get("GITHUB_REPO"):
+        print("⚠️  .env missing GITHUB_USER / GITHUB_REPO.")
+        print("    Create .env next to this script (see instructions).")
 
+    choice = menu()
     if choice not in ("1", "2", "3"):
-        print("❌ Invalid choice. Exiting.")
+        print("❌ Invalid.")
         return
 
-    # ── Step 1: Apply patches (options 1 & 2) ──
+    # 1 & 2 → apply patches + admin queue
     if choice in ("1", "2"):
         patches = parse_patch_file(PATCH_FILE)
-        if not patches:
-            print("⚠️  patch.txt is empty or invalid. Nothing to apply.")
+        if patches:
+            print(f"\n📦 {len(patches)} patch block(s)...")
+            apply_patches(patches)
+            ans = input("🧹 Clear patch.txt? (Y/n): ").strip().lower()
+            if ans != "n":
+                open(PATCH_FILE, "w").close()
+                print("   Cleared.")
         else:
-            print(f"\n📦 Found {len(patches)} patch block(s). Applying...\n")
-            count = apply_patches(patches)
-            print(f"\n✅ Applied {count}/{len(patches)} patches.")
+            print("ℹ️  patch.txt empty.")
 
-            # Clear patch.txt after successful run
-            if count > 0:
-                ans = input("\n🧹 Clear patch.txt now? (Y/n): ").strip().lower()
-                if ans != "n":
-                    with open(PATCH_FILE, "w", encoding="utf-8") as f:
-                        f.write("")
-                    print("   patch.txt cleared.")
+        if apply_admin_queue():
+            print("📥 Admin queue applied.")
 
-    # ── Step 2: Push (options 1 & 3) ──
+    # 1 & 3 → git push
     if choice in ("1", "3"):
-        msg = input("\n📝 Commit message (Enter for default): ").strip()
-        if not msg:
-            msg = "Update store via auto-patch"
+        msg = input("\n📝 Commit message (Enter = default): ").strip() \
+              or "Update store via backend sync"
         git_push(msg)
 
-    print("\n🏁 All done. Press Enter to exit.")
+    print("\n🏁 Done. Press Enter to close.")
     input()
 
 
@@ -144,4 +175,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n⚠️  Cancelled by user.")
+        print("\n⚠️  Cancelled.")

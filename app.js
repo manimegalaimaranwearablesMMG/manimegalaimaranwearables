@@ -1,6 +1,6 @@
 // === STORE CONFIGURATION (Update with your real details) ===
 const CONFIG = {
-  storeName: "Mahadev Fashion Studio",
+  storeName: "Mahadev Fashion Hub",
   upiId: "yourname@okhdfcbank", // Your GPay/PhonePe UPI ID
   whatsappNumber: "919876543210" // Format: 91 + 10-digit number without +
 };

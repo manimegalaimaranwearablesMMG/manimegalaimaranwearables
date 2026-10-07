@@ -64,26 +64,10 @@
         <h2>🔱 Mahadev Fashion Hub</h2>
         <small style="color:var(--muted)">Admin Product & Inventory Studio</small>
       </div>
-      <button class="btn-sm btn-edit" onclick="toggleConfig()">⚙️ Cloud Sync Settings</button>
+      <span id="syncStatusBadge" style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#166534; font-size:0.75rem; font-weight:600; padding:6px 10px; border-radius:6px;">🟢 Auto-Sync Active</span>
     </div>
 
-    <!-- 1. Cloud Sync Credentials Box -->
-    <div id="configBox" class="card" style="display:none; border-color:var(--accent);">
-      <h2>🔗 GitHub Real-Time Sync Setup</h2>
-      <p class="sub">Enter your GitHub credentials once. Stored securely on your device.</p>
-      
-      <label>GitHub Username / Organization</label>
-      <input type="text" id="ghUser" placeholder="e.g. yourname">
-
-      <label>Repository Name</label>
-      <input type="text" id="ghRepo" placeholder="e.g. mahadev-fashion-hub">
-
-      <label>GitHub Personal Access Token (Classic)</label>
-      <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-      <small style="color:var(--muted); display:block; margin-bottom:12px;">Needs 'repo' or 'contents:write' permission.</small>
-
-      <button class="btn btn-primary" onclick="saveConfig()">Save Connection</button>
-    </div>
+    <!-- Backend sync notice (credentials handled server-side) -->
 
     <div id="statusNotice" style="display:none;" class="card"></div>
 
@@ -95,8 +79,7 @@
       <input type="hidden" id="editProductId" value="">
 
       <!-- Image Upload & Preview -->
-      <label>Product Photo (Pick from Phone Camera/PC)</label>
-      <div class="preview-box" id="previewContainer">
+        <div class="preview-box" id="previewContainer">
         <span id="previewPlaceholder">No Image Selected</span>
         <img id="imgPreview" src="" alt="Product Preview">
       </div>
@@ -154,68 +137,52 @@
 
   <script>
     let productsList = [];
-    let fileSha = null; // Needed for GitHub API updates
     let currentBase64Image = "";
 
     // 1. Initialize
     document.addEventListener("DOMContentLoaded", () => {
-      loadSavedConfig();
       fetchCatalog();
+      checkBackendHealth();
     });
 
-    function toggleConfig() {
-      const box = document.getElementById("configBox");
-      box.style.display = box.style.display === "none" ? "block" : "none";
+    // 🩺 Ping backend to show real status
+    async function checkBackendHealth() {
+      const badge = document.getElementById("syncStatusBadge");
+      if (!badge) return;
+      try {
+        const res = await fetch("http://localhost:5000/health", { cache: "no-store" });
+        const data = await res.json();
+        if (data.ok && data.token_set) {
+          badge.style.background = "#dcfce7";
+          badge.style.color = "#166534";
+          badge.innerText = "🟢 Auto-Sync Active";
+        } else {
+          badge.style.background = "#fef3c7";
+          badge.style.color = "#92400e";
+          badge.innerText = "🟡 Backend up, no token";
+        }
+      } catch {
+        badge.style.background = "#fee2e2";
+        badge.style.color = "#991b1b";
+        badge.innerText = "🔴 Backend offline";
+      }
     }
 
-    function saveConfig() {
-      localStorage.setItem("gh_user", document.getElementById("ghUser").value.trim());
-      localStorage.setItem("gh_repo", document.getElementById("ghRepo").value.trim());
-      localStorage.setItem("gh_token", document.getElementById("ghToken").value.trim());
-      alert("✅ GitHub credentials saved locally!");
-      toggleConfig();
-      fetchCatalog();
-    }
-
-    function loadSavedConfig() {
-      document.getElementById("ghUser").value = localStorage.getItem("gh_user") || "";
-      document.getElementById("ghRepo").value = localStorage.getItem("gh_repo") || "";
-      document.getElementById("ghToken").value = localStorage.getItem("gh_token") || "";
-    }
+    // 🔒 Credentials handled by backend Python sync script (auto_patch_sync.py).
+    // No tokens or repo names stored in the browser.
 
     // 2. Read products directly from GitHub API
+    // 📦 Catalog is loaded from local products.json only.
+    // Backend Python script handles GitHub push.
     async function fetchCatalog() {
-      const user = localStorage.getItem("gh_user");
-      const repo = localStorage.getItem("gh_repo");
-      const token = localStorage.getItem("gh_token");
-
-      if (!user || !repo) {
-        // Fallback to local fetch if credentials not set yet
-        try {
-          const res = await fetch(`products.json?_t=${Date.now()}`);
-          productsList = await res.json();
-          renderCatalog();
-        } catch(e) {
-          document.getElementById("itemsContainer").innerHTML = "<p style='color:var(--muted);'>Configure GitHub sync settings above.</p>";
-        }
-        return;
-      }
-
       try {
-        const url = `https://api.github.com/repos/${user}/${repo}/contents/products.json`;
-        const headers = token ? { "Authorization": `token ${token}` } : {};
-        const res = await fetch(url + `?_t=${Date.now()}`, { headers });
-
-        if (res.ok) {
-          const data = await res.json();
-          fileSha = data.sha;
-          // Decode Base64 from GitHub
-          const decodedContent = decodeURIComponent(escape(atob(data.content)));
-          productsList = JSON.parse(decodedContent);
-          renderCatalog();
-        }
-      } catch (err) {
-        console.error("Fetch failed", err);
+        const res = await fetch(`products.json?_t=${Date.now()}`);
+        if (!res.ok) throw new Error("products.json not found");
+        productsList = await res.json();
+        renderCatalog();
+      } catch (e) {
+        document.getElementById("itemsContainer").innerHTML =
+          "<p style='color:var(--muted);'>Could not load products.json — run the backend sync script.</p>";
       }
     }
 
@@ -301,7 +268,6 @@
       }
 
       if (editId) {
-        // Update existing
         const idx = productsList.findIndex(p => p.id === editId);
         if (idx !== -1) {
           productsList[idx] = {
@@ -310,7 +276,6 @@
           };
         }
       } else {
-        // Create new
         const newItem = {
           id: "AJ-" + Date.now().toString().slice(-4),
           title, price, originalPrice: mrp, category, tag: tag || "New", description: desc, image: imgUrl
@@ -320,7 +285,10 @@
 
       renderCatalog();
       resetForm();
-      await pushChangesToGitHub("Update product: " + title);
+
+      // 💾 Save to localStorage as pending queue for backend to pick up
+      localStorage.setItem("pending_catalog", JSON.stringify(productsList));
+      alert("✅ Saved locally. Run sync.bat (option 1 or 3) to push to GitHub.");
     }
 
     function editProduct(index) {
@@ -365,61 +333,13 @@
       if (confirm(`Are you sure you want to delete "${title}"?`)) {
         productsList.splice(index, 1);
         renderCatalog();
-        await pushChangesToGitHub("Deleted product: " + title);
+        localStorage.setItem("pending_catalog", JSON.stringify(productsList));
+        alert("🗑️ Deleted locally. Run sync.bat (option 1 or 3) to push.");
       }
     }
 
-    // 6. Direct GitHub Sync via API
-    async function pushChangesToGitHub(commitMessage) {
-      const user = localStorage.getItem("gh_user");
-      const repo = localStorage.getItem("gh_repo");
-      const token = localStorage.getItem("gh_token");
-
-      if (!token || !user || !repo) {
-        alert("Product saved locally! To sync automatically to the live website, enter your GitHub settings under 'Cloud Sync Settings'.");
-        return;
-      }
-
-      const saveBtn = document.getElementById("saveBtn");
-      saveBtn.innerText = "⏳ Syncing to GitHub...";
-      saveBtn.disabled = true;
-
-      try {
-        const contentStr = JSON.stringify(productsList, null, 2);
-        // UTF-8 to Base64
-        const contentBase64 = btoa(unescape(encodeURIComponent(contentStr)));
-
-        const url = `https://api.github.com/repos/${user}/${repo}/contents/products.json`;
-        const body = {
-          message: commitMessage,
-          content: contentBase64,
-          sha: fileSha
-        };
-
-        const res = await fetch(url, {
-          method: "PUT",
-          headers: {
-            "Authorization": `token ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (res.ok) {
-          const resData = await res.json();
-          fileSha = resData.content.sha;
-          alert("🎉 Live Store Updated! Your changes are now live on GitHub.");
-        } else {
-          const errData = await res.json();
-          alert("Sync error: " + (errData.message || "Failed to commit."));
-        }
-      } catch (e) {
-        alert("Network error while syncing: " + e.message);
-      } finally {
-        saveBtn.innerText = "Publish & Update Store";
-        saveBtn.disabled = false;
-      }
-    }
+    // 🔒 GitHub sync is now handled entirely by the backend (auto_patch_sync.py).
+    // The admin panel queues changes to localStorage; the Python script applies them.
   </script>
 </body>
 </html>
