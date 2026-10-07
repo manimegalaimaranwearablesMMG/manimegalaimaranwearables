@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Jewels - Seller Hub</title>
+  <style>
+    :root {
+      --primary: #92400e;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #d97706;
+      --success: #16a34a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 16px; display: flex; justify-content: center; }
+    .admin-container { width: 100%; max-width: 600px; }
+
+    /* Security PIN Screen */
+    #lockScreen { background: var(--surface); padding: 30px; border-radius: 16px; border: 1px solid var(--border); text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-top: 40px; }
+    #lockScreen input { width: 140px; text-align: center; font-size: 1.5rem; letter-spacing: 6px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; margin: 16px 0; }
+    
+    /* Main Dashboard */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    h2 { font-size: 1.25rem; color: var(--primary); margin-bottom: 4px; }
+    p.sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; margin-bottom: 12px; }
+    
+    .row { display: flex; gap: 10px; }
+    .row > div { flex: 1; }
+
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; margin-top: 8px; }
+    .btn-secondary { background: #e2e8f0; color: var(--text); margin-top: 6px; }
+
+    /* Product Preview Table */
+    .item-list { max-height: 250px; overflow-y: auto; }
+    .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .item-row button { background: #fee2e2; border: none; color: #dc2626; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+
+  <div class="admin-container">
+
+    <!-- 1. PIN Lock Protection -->
+    <div id="lockScreen">
+      <h2>🔐 Aura Jewels Seller Studio</h2>
+      <p class="sub">Enter your 4-digit Admin PIN to manage inventory</p>
+      <input type="password" id="pinInput" maxlength="4" placeholder="••••"><br>
+      <button class="btn btn-primary" onclick="unlockAdmin()" style="width: auto; padding: 10px 24px;">Unlock Dashboard</button>
+      <p id="pinError" style="color: #dc2626; font-size: 0.8rem; margin-top: 8px; display: none;">Incorrect PIN. Try again.</p>
+    </div>
+
+    <!-- 2. Admin Hub Interface (Hidden by Default) -->
+    <div id="adminPanel" style="display: none;">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+          <h2>Seller Management Hub</h2>
+          <small style="color: var(--muted);">Direct store controls</small>
+        </div>
+        <a href="index.html" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600;">Open Customer Store ↗</a>
+      </div>
+
+      <!-- Add New Product Form -->
+      <div class="card">
+        <h2>✨ Add New Jewelry Item</h2>
+        <p class="sub">Fill details to append to your catalog</p>
+
+        <label>Item Title</label>
+        <input type="text" id="pTitle" placeholder="e.g. Traditional Matte Ruby Choker">
+
+        <div class="row">
+          <div>
+            <label>Category</label>
+            <select id="pCat">
+              <option value="Necklaces">Necklaces</option>
+              <option value="Earrings">Earrings</option>
+              <option value="Bangles">Bangles</option>
+              <option value="Rings">Rings</option>
+            </select>
+          </div>
+          <div>
+            <label>Badge Tag</label>
+            <input type="text" id="pTag" placeholder="e.g. Trending, Bestseller">
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Selling Price (₹)</label>
+            <input type="number" id="pPrice" placeholder="1499">
+          </div>
+          <div>
+            <label>Original MRP (₹)</label>
+            <input type="number" id="pMrp" placeholder="2999">
+          </div>
+        </div>
+
+        <label>Image URL (or unspash/imgur link)</label>
+        <input type="text" id="pImg" placeholder="https://...">
+
+        <button class="btn btn-primary" onclick="addNewProduct()">+ Add Item to Catalog</button>
+      </div>
+
+      <!-- Current Items Manager -->
+      <div class="card">
+        <h2>📦 Current Inventory (<span id="totalItemsCount">0</span>)</h2>
+        <p class="sub">Live products in products.json</p>
+        <div class="item-list" id="currentItemsList">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Download & Sync Actions -->
+        <button class="btn btn-success" onclick="downloadUpdatedJson()">💾 Download Updated products.json</button>
+        <button class="btn btn-secondary" onclick="copyJsonData()">📋 Copy JSON (For Python Script)</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_PIN = "1234"; // CHANGE THIS to your secret 4-digit PIN!
+    let liveProducts = [];
+
+    function unlockAdmin() {
+      const entered = document.getElementById("pinInput").value;
+      if (entered === ADMIN_PIN) {
+        document.getElementById("lockScreen").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        loadExistingProducts();
+      } else {
+        document.getElementById("pinError").style.display = "block";
+      }
+    }
+
+    async function loadExistingProducts() {
+      try {
+        const res = await fetch(`products.json?_t=${Date.now()}`);
+        liveProducts = await res.json();
+      } catch (e) {
+        liveProducts = [];
+      }
+      renderInventoryList();
+    }
+
+    function renderInventoryList() {
+      document.getElementById("totalItemsCount").innerText = liveProducts.length;
+      const list = document.getElementById("currentItemsList");
+      if (liveProducts.length === 0) {
+        list.innerHTML = "<p style='color: var(--muted); padding: 8px 0;'>No products loaded yet.</p>";
+        return;
+      }
+      list.innerHTML = liveProducts.map((p, index) => `
+        <div class="item-row">
+          <div>
+            <strong>${p.title}</strong>
+            <div style="color: var(--muted); font-size: 0.75rem;">₹${p.price} | ${p.category}</div>
+          </div>
+          <button onclick="deleteProduct(${index})">Delete</button>
+        </div>
+      `).join("");
+    }
+
+    function addNewProduct() {
+      const title = document.getElementById("pTitle").value.trim();
+      const category = document.getElementById("pCat").value;
+      const tag = document.getElementById("pTag").value.trim();
+      const price = Number(document.getElementById("pPrice").value);
+      const mrp = Number(document.getElementById("pMrp").value) || (price * 1.5);
+      const img = document.getElementById("pImg").value.trim() || "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80";
+
+      if (!title || !price) return alert("Please fill Title and Price.");
+
+      const newItem = {
+        id: "AJ-" + Date.now().toString().slice(-4),
+        title: title,
+        category: category,
+        price: price,
+        originalPrice: mrp,
+        tag: tag || "New",
+        image: img,
+        description: "Handcrafted boutique jewelry collection."
+      };
+
+      liveProducts.unshift(newItem);
+      renderInventoryList();
+      alert(`"${title}" added! Remember to click "Download Updated products.json" to save.`);
+      
+      // Clear inputs
+      document.getElementById("pTitle").value = "";
+      document.getElementById("pPrice").value = "";
+      document.getElementById("pMrp").value = "";
+      document.getElementById("pTag").value = "";
+      document.getElementById("pImg").value = "";
+    }
+
+    function deleteProduct(index) {
+      if (confirm(`Remove "${liveProducts[index].title}"?`)) {
+        liveProducts.splice(index, 1);
+        renderInventoryList();
+      }
+    }
+
+    function downloadUpdatedJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(liveProducts, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "products.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function copyJsonData() {
+      navigator.clipboard.writeText(JSON.stringify(liveProducts, null, 2));
+      alert("JSON copied to clipboard! You can paste this directly into your products.json on PC.");
+    }
+  </script>
+</body>
+</html>
