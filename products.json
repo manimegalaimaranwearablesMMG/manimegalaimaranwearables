@@ -1,0 +1,32 @@
+[
+  {
+    "id": "AJ-101",
+    "title": "Royal Kundan Choker Necklace",
+    "category": "Necklaces",
+    "price": 2499,
+    "originalPrice": 4999,
+    "tag": "Bestseller",
+    "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80",
+    "description": "Handcrafted brass choker set with authentic meenakari backing and freshwater pearls."
+  },
+  {
+    "id": "AJ-102",
+    "title": "Temple Gold Jhumka Earrings",
+    "category": "Earrings",
+    "price": 1299,
+    "originalPrice": 2199,
+    "tag": "Trending",
+    "image": "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=600&q=80",
+    "description": "Antique matte finish floral drop jhumkas studded with ruby-red micro stones."
+  },
+  {
+    "id": "AJ-103",
+    "title": "Zircon Solitaire Adjustable Kada",
+    "category": "Bangles",
+    "price": 899,
+    "originalPrice": 1499,
+    "tag": "New",
+    "image": "https://images.unsplash.com/photo-1611591475879-798485295c21?auto=format&fit=crop&w=600&q=80",
+    "description": "18K micro gold-plated daily-wear cuff with high-grade AAA CZ stones."
+  }
+]
