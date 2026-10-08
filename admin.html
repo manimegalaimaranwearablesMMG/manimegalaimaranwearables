@@ -187,32 +187,18 @@
     }
 
     // 3. Image Compression & Handling
+    // 3. Image Handling (Preview Only)
     function handleImageSelection(event) {
       const file = event.target.files[0];
       if (!file) return;
+      currentImageFile = file;
 
+      // Preview locally without uploading
       const reader = new FileReader();
       reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          // Resize image on the fly to keep files fast and lightweight (Max width 800px)
-          const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 800;
-          const scaleSize = MAX_WIDTH / img.width;
-          canvas.width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
-          canvas.height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
-
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
-          currentBase64Image = canvas.toDataURL("image/jpeg", 0.75); // Compressed JPEG
-          
-          // Preview
-          document.getElementById("imgPreview").src = currentBase64Image;
-          document.getElementById("imgPreview").style.display = "block";
-          document.getElementById("previewPlaceholder").style.display = "none";
-        };
-        img.src = e.target.result;
+        document.getElementById("imgPreview").src = e.target.result;
+        document.getElementById("imgPreview").style.display = "block";
+        document.getElementById("previewPlaceholder").style.display = "none";
       };
       reader.readAsDataURL(file);
     }
@@ -251,29 +237,54 @@
       const tag = document.getElementById("pTag").value.trim();
       const desc = document.getElementById("pDesc").value.trim();
       const editId = document.getElementById("editProductId").value;
+      const saveBtn = document.getElementById("saveBtn");
+      const original = saveBtn.innerText;
 
       if (!title || !price) {
         alert("Please enter product name and selling price.");
         return;
       }
 
-      let imgUrl = currentBase64Image;
-      if (!imgUrl && editId) {
+      // 1. Upload image if a new file was selected
+      let imgUrl = null;
+      if (currentImageFile) {
+        saveBtn.innerText = "⏳ Uploading image...";
+        saveBtn.disabled = true;
+        try {
+          const form = new FormData();
+          form.append("file", currentImageFile);
+          form.append("filename", currentImageFile.name);
+          const upRes = await fetch("http://localhost:5000/upload", {
+            method: "POST",
+            body: form
+          });
+          const upData = await upRes.json();
+          if (!upData.ok) throw new Error(upData.error);
+          imgUrl = upData.url;
+        } catch (e) {
+          alert("❌ Image upload failed: " + e.message);
+          saveBtn.innerText = original;
+          saveBtn.disabled = false;
+          return;
+        }
+      } else if (editId) {
+        // Keep the existing image if editing without a new file
         const existing = productsList.find(p => p.id === editId);
         if (existing) imgUrl = existing.image;
       }
 
       if (!imgUrl) {
-        imgUrl = "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80";
+        alert("Please select an image.");
+        saveBtn.innerText = original;
+        saveBtn.disabled = false;
+        return;
       }
 
+      // 2. Build product object and update list
       if (editId) {
         const idx = productsList.findIndex(p => p.id === editId);
         if (idx !== -1) {
-          productsList[idx] = {
-            id: editId,
-            title, price, originalPrice: mrp, category, tag, description: desc, image: imgUrl
-          };
+          productsList[idx] = { id: editId, title, price, originalPrice: mrp, category, tag, description: desc, image: imgUrl };
         }
       } else {
         const newItem = {
@@ -285,11 +296,14 @@
 
       renderCatalog();
       resetForm();
+      
+      // 3. Push the updated catalog (with Cloudinary URLs) to GitHub
       await pushChangesToGitHub("Update product: " + title);
     }
 
     function editProduct(index) {
       const p = productsList[index];
+      currentImageFile = null;
       document.getElementById("formTitle").innerText = "✏️ Edit Product";
       document.getElementById("editProductId").value = p.id;
       document.getElementById("pTitle").value = p.title;
@@ -322,7 +336,7 @@
       document.getElementById("previewPlaceholder").style.display = "block";
       document.getElementById("saveBtn").innerText = "Publish & Update Store";
       document.getElementById("cancelEditBtn").style.display = "none";
-      currentBase64Image = "";
+      currentBase64Image = null;
     }
 
     async function deleteProduct(index) {

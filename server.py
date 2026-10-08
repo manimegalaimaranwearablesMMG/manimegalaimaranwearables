@@ -9,7 +9,9 @@ import subprocess
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
-
+import cloudinary
+import cloudinary.uploader
+from multipart import parse_form_data
 
 ENV_FILE = ".env"
 PRODUCTS = "products.json"
@@ -36,6 +38,12 @@ GH_USER = ENV.get("GITHUB_USER", "")
 GH_REPO = ENV.get("GITHUB_REPO", "")
 GH_TOKEN = ENV.get("GITHUB_TOKEN", "")
 GH_BRANCH = ENV.get("GITHUB_BRANCH", "main")
+cloudinary.config(
+    cloud_name=ENV.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=ENV.get("CLOUDINARY_API_KEY"),
+    api_secret=ENV.get("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 
 # ─────────────────────────────────────────────
@@ -113,6 +121,69 @@ class Handler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
+        # ── Upload image to Cloudinary ──
+        if self.path == "/upload":
+            try:
+                content_type = self.headers.get("Content-Type", "")
+                content_length = int(self.headers.get("Content-Length", 0))
+                
+                if "boundary=" not in content_type:
+                    self._json(400, {"ok": False, "error": "Missing boundary"})
+                    return
+                
+                boundary = content_type.split("boundary=")[1].strip()
+                if boundary.startswith('"') and boundary.endswith('"'):
+                    boundary = boundary[1:-1]
+                
+                from multipart import MultipartParser
+                import io
+                
+                body = self.rfile.read(content_length)
+                parser = MultipartParser(io.BytesIO(body), boundary, charset="latin-1")
+                
+                file_bytes = None
+                raw_filename = None
+                
+                for part in parser:
+                    if part.name == "file":
+                        # Get raw bytes directly
+                        file_bytes = part.value if isinstance(part.value, bytes) else part.value.encode('latin-1')
+                        raw_filename = part.filename
+                        break
+                
+                if not file_bytes:
+                    self._json(400, {"ok": False, "error": "No file received"})
+                    return
+                
+                # Sanitize filename: remove null bytes and decode safely
+                if raw_filename:
+                    # Remove null bytes
+                    safe_name = raw_filename.replace('\x00', '').strip()
+                    # Decode if it's bytes
+                    if isinstance(safe_name, bytes):
+                        safe_name = safe_name.decode('latin-1', errors='ignore')
+                    filename = safe_name or "upload.jpg"
+                else:
+                    filename = "upload.jpg"
+                
+                # Ensure filename ends with a proper extension
+                if '.' not in filename:
+                    filename = filename + '.jpg'
+                
+                # Upload to Cloudinary
+                result = cloudinary.uploader.upload(
+                    file_bytes,
+                    folder="ma-fashion",
+                    public_id=filename.rsplit(".", 1)[0],
+                    overwrite=False,
+                    resource_type="image"
+                )
+                self._json(200, {"ok": True, "url": result["secure_url"]})
+                
+            except Exception as e:
+                self._json(500, {"ok": False, "error": str(e)})
+            return
+                
         # ── Save catalog → local + GitHub (auto) ──
         if self.path == "/save":
             length = int(self.headers.get("Content-Length", 0))
