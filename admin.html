@@ -285,10 +285,7 @@
 
       renderCatalog();
       resetForm();
-
-      // 💾 Save to localStorage as pending queue for backend to pick up
-      localStorage.setItem("pending_catalog", JSON.stringify(productsList));
-      alert("✅ Saved locally. Run sync.bat (option 1 or 3) to push to GitHub.");
+      await pushChangesToGitHub("Update product: " + title);
     }
 
     function editProduct(index) {
@@ -333,13 +330,42 @@
       if (confirm(`Are you sure you want to delete "${title}"?`)) {
         productsList.splice(index, 1);
         renderCatalog();
-        localStorage.setItem("pending_catalog", JSON.stringify(productsList));
-        alert("🗑️ Deleted locally. Run sync.bat (option 1 or 3) to push.");
+        await pushChangesToGitHub("Deleted product: " + title);
       }
     }
 
-    // 🔒 GitHub sync is now handled entirely by the backend (auto_patch_sync.py).
-    // The admin panel queues changes to localStorage; the Python script applies them.
+    // 🚀 AUTO-SYNC: POST to backend server, which pushes to GitHub
+    async function pushChangesToGitHub(commitMessage) {
+      const saveBtn = document.getElementById("saveBtn");
+      const original = saveBtn.innerText;
+      saveBtn.innerText = "⏳ Pushing to GitHub...";
+      saveBtn.disabled = true;
+
+      try {
+        const res = await fetch("http://localhost:5000/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(productsList)
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          saveBtn.innerText = "✅ Live!";
+          setTimeout(() => {
+            saveBtn.innerText = original;
+            saveBtn.disabled = false;
+          }, 1500);
+        } else {
+          alert("❌ Sync failed: " + (data.error || "Unknown error"));
+          saveBtn.innerText = original;
+          saveBtn.disabled = false;
+        }
+      } catch (e) {
+        alert("❌ Backend not running.\n\nStart it with: start.bat\n\nError: " + e.message);
+        saveBtn.innerText = original;
+        saveBtn.disabled = false;
+      }
+    }
   </script>
 </body>
 </html>

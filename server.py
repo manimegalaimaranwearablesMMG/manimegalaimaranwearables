@@ -45,7 +45,7 @@ def gh_get_sha():
     """Get current products.json SHA from GitHub (needed for update)."""
     url = f"https://api.github.com/repos/{GH_USER}/{GH_REPO}/contents/{PRODUCTS}?ref={GH_BRANCH}"
     req = Request(url, headers={
-        "Authorization": f"token {GH_TOKEN}",
+        "Authorization": f"Bearer {GH_TOKEN}",
         "Accept": "application/vnd.github+json"
     })
     try:
@@ -72,7 +72,7 @@ def gh_push(content_str, commit_msg):
 
     url = f"https://api.github.com/repos/{GH_USER}/{GH_REPO}/contents/{PRODUCTS}"
     req = Request(url, method="PUT", data=json.dumps(body).encode("utf-8"), headers={
-        "Authorization": f"token {GH_TOKEN}",
+        "Authorization": f"Bearer {GH_TOKEN}",
         "Accept": "application/vnd.github+json",
         "Content-Type": "application/json"
     })
