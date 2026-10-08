@@ -10,10 +10,24 @@
 </head>
 <body>
 
-  <!-- Top App Navigation -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- [HEADER] Top app navigation                                    -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
   <header class="app-header">
     <div class="brand">
-      <span class="logo-icon">🔱</span>
+      <!-- [LOGO] Replace src with your Cloudinary logo URL.            -->
+      <!-- Supported: PNG, JPG, GIF, animated WebP, MP4 (video).       -->
+      <!-- For MP4, replace <img> with:                                -->
+      <!--   <video autoplay loop muted playsinline class="brand-logo">-->
+      <!--     <source src="YOUR_VIDEO_URL" type="video/mp4">          -->
+      <!--   </video>                                                   -->
+      <img
+        src="YOUR_LOGO_URL_HERE"
+        alt="Mahadev Fashion Hub"
+        class="brand-logo"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+      >
+      <span class="logo-icon-fallback">🔱</span>
       <div>
         <h1>Mahadev Fashion Hub</h1>
         <small>Curated Jewels & Ethnic Wardrobe</small>
@@ -26,35 +40,84 @@
       </button>
     </div>
   </header>
+  <!-- [END HEADER] -->
 
   <!-- Main Viewport -->
   <main class="container">
-    
-    <!-- Hero Banner -->
-    <section class="hero-banner">
-      <div class="hero-content">
-        <span class="badge">Festive Special Collection</span>
-        <h2>Shine with Pure Elegance</h2>
-        <p>Direct from artisanal makers • Flat 0% gateway commission</p>
-      </div>
-    </section>
 
-    <!-- Category Filters -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- [CAROUSEL] Auto-sliding product hero slider                    -->
+    <!-- -------------------------------------------------------------- -->
+    <!-- Replaces old "Hero Banner" block.                             -->
+    <!-- Filled dynamically by app.js → initCarousel()                  -->
+    <!-- Config: CAROUSEL_INTERVAL (3000ms), pause on hover, clickable  -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <section class="hero-carousel" id="heroCarousel" aria-label="Featured products">
+      <div class="carousel-track" id="carouselTrack">
+        <!-- Slides injected by app.js -->
+        <div class="carousel-loading">Loading featured picks…</div>
+      </div>
+
+      <!-- [CAROUSEL DOTS] Small indicator dots at the bottom -->
+      <div class="carousel-dots" id="carouselDots" aria-label="Slide navigation"></div>
+    </section>
+    <!-- [END CAROUSEL] -->
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- [FILTERS] Tag filter chips (Best Sellers, Most Loved, etc.)    -->
+    <!-- -------------------------------------------------------------- -->
+    <!-- Separate row above category pills.                             -->
+    <!-- Click chip → filters grid by product.tags array.               -->
+    <!-- Handled in app.js → setupFilterChips()                         -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <div class="filter-chips" id="filterChips" role="tablist" aria-label="Product filters">
+      <button class="filter-chip active" data-tag="all"          role="tab">All</button>
+      <button class="filter-chip"        data-tag="bestseller"   role="tab">⭐ Best Sellers</button>
+      <button class="filter-chip"        data-tag="most_loved"   role="tab">💖 Most Loved</button>
+      <button class="filter-chip"        data-tag="trending"     role="tab">🔥 Trending</button>
+      <button class="filter-chip"        data-tag="new"          role="tab">✨ New</button>
+      <button class="filter-chip"        data-tag="sale"         role="tab">🏷️ Sale</button>
+    </div>
+    <!-- [END FILTERS] -->
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- [CATEGORIES] Category filter pills                             -->
+    <!-- -------------------------------------------------------------- -->
+    <!-- Categories must match admin.html dropdown exactly:             -->
+    <!-- Necklaces, Earrings, Bangles, Rings, Sarees, Ornaments,        -->
+    <!-- Accessories. Previously mismatched (Jewelry vs Necklaces).     -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
     <div class="categories" id="categoryBar">
       <button class="cat-pill active" data-cat="all">All Collection</button>
-      <button class="cat-pill" data-cat="Jewelry">Jewels & Sets</button>
-      <button class="cat-pill" data-cat="Sarees">Sarees & Ethnic</button>
-      <button class="cat-pill" data-cat="Ornaments">Hair Ornaments</button>
-      <button class="cat-pill" data-cat="Accessories">Accessories</button>
+      <button class="cat-pill"        data-cat="Necklaces">Necklaces</button>
+      <button class="cat-pill"        data-cat="Earrings">Earrings</button>
+      <button class="cat-pill"        data-cat="Bangles">Bangles</button>
+      <button class="cat-pill"        data-cat="Rings">Rings</button>
+      <button class="cat-pill"        data-cat="Sarees">Sarees & Ethnic</button>
+      <button class="cat-pill"        data-cat="Ornaments">Hair Ornaments</button>
+      <button class="cat-pill"        data-cat="Accessories">Accessories</button>
     </div>
+    <!-- [END CATEGORIES] -->
 
-    <!-- Product Grid -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- [PRODUCT GRID] Main product listing                            -->
+    <!-- -------------------------------------------------------------- -->
+    <!-- Injected by app.js → renderProducts()                          -->
+    <!-- Order logic (when data-cat="all" + data-tag="all"):            -->
+    <!--   1. Bestsellers first                                         -->
+    <!--   2. Then most_loved                                           -->
+    <!--   3. Then remaining products shuffled randomly                 -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
     <section class="products-grid" id="productsContainer">
       <!-- Injected by app.js -->
     </section>
+    <!-- [END PRODUCT GRID] -->
+
   </main>
 
-  <!-- Slide-out Cart Drawer -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- [CART DRAWER] Slide-out shopping bag                           -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="cart-overlay" id="cartOverlay">
     <aside class="cart-drawer">
       <div class="cart-header">
@@ -72,7 +135,6 @@
           <strong id="cartTotalDisplay">₹0</strong>
         </div>
 
-        <!-- Customer Inputs for Delivery -->
         <div class="checkout-fields">
           <input type="text" id="custName" placeholder="Your Full Name" required>
           <input type="tel" id="custPhone" placeholder="Mobile / WhatsApp Number" required>
@@ -83,17 +145,20 @@
       </div>
     </aside>
   </div>
+  <!-- [END CART DRAWER] -->
 
-  <!-- Instant UPI Payment Modal -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- [UPI MODAL] Instant UPI payment dialog                         -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="upi-modal-overlay" id="upiModal">
     <div class="upi-card">
       <div class="upi-header">
         <h3>Complete Payment</h3>
         <button class="close-btn" id="upiCloseBtn">&times;</button>
       </div>
-      
+
       <p class="upi-subtitle">Scan QR with GPay / PhonePe / Paytm or pay directly</p>
-      
+
       <div class="qr-wrapper">
         <img id="upiQrImg" src="" alt="UPI QR Code">
       </div>
@@ -109,16 +174,12 @@
         </div>
       </div>
 
-      <!-- Deep link for Mobile App users (Samsung M34) -->
       <a href="#" class="btn-direct-upi" id="directUpiLink">⚡ Pay with Installed UPI App</a>
-
-      <!-- Proceed to WhatsApp with Verified Details -->
-      <button class="btn-wa-confirm" id="proceedWhatsAppBtn">
-        📲 Send Confirmation on WhatsApp
-      </button>
+      <button class="btn-wa-confirm" id="proceedWhatsAppBtn">📲 Send Confirmation on WhatsApp</button>
       <small class="safety-note">🔒 Payments route via NPCI banking networks directly to seller.</small>
     </div>
   </div>
+  <!-- [END UPI MODAL] -->
 
   <script src="app.js"></script>
 </body>
