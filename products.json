@@ -1,5 +1,18 @@
 [
   {
+    "id": "AJ-1343",
+    "title": "AGA",
+    "price": 12,
+    "originalPrice": 34,
+    "category": "Necklaces",
+    "tag": "GAD",
+    "tags": [
+      "bestseller"
+    ],
+    "description": "AHAG",
+    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1791460115/ma-fashion/Scan10003-150kb.jpg"
+  },
+  {
     "id": "AJ-2208",
     "title": "sdf",
     "price": 9,
@@ -7,6 +20,9 @@
     "category": "Necklaces",
     "tag": "awgt",
     "description": "asg",
-    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1791451786/ma-fashion/IMG-20260908-WA0012.jpg"
+    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1791451786/ma-fashion/IMG-20260908-WA0012.jpg",
+    "tags": [
+      "awgt"
+    ]
   }
 ]
