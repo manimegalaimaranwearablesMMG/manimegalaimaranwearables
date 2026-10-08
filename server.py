@@ -141,44 +141,61 @@ class Handler(SimpleHTTPRequestHandler):
                 body = self.rfile.read(content_length)
                 parser = MultipartParser(io.BytesIO(body), boundary, charset="latin-1")
                 
-                file_bytes = None
-                raw_filename = None
-                
+                # Collect ALL files from the multipart body
+                uploaded = []
                 for part in parser:
                     if part.name == "file":
-                        # Get raw bytes directly
-                        file_bytes = part.value if isinstance(part.value, bytes) else part.value.encode('latin-1')
-                        raw_filename = part.filename
-                        break
+                        raw = part.value if isinstance(part.value, bytes) else part.value.encode('latin-1')
+                        fname = (part.filename or "upload.jpg").replace('\x00', '').strip()
+                        if isinstance(fname, bytes):
+                            fname = fname.decode('latin-1', errors='ignore')
+                        if not fname:
+                            fname = "upload.jpg"
+                        if '.' not in fname:
+                            fname = fname + '.jpg'
+                        uploaded.append((raw, fname))
                 
-                if not file_bytes:
-                    self._json(400, {"ok": False, "error": "No file received"})
+                if not uploaded:
+                    self._json(400, {"ok": False, "error": "No files received"})
                     return
                 
-                # Sanitize filename: remove null bytes and decode safely
-                if raw_filename:
-                    # Remove null bytes
-                    safe_name = raw_filename.replace('\x00', '').strip()
-                    # Decode if it's bytes
-                    if isinstance(safe_name, bytes):
-                        safe_name = safe_name.decode('latin-1', errors='ignore')
-                    filename = safe_name or "upload.jpg"
-                else:
-                    filename = "upload.jpg"
+                if len(uploaded) > 5:
+                    self._json(400, {"ok": False, "error": "Max 5 images per product"})
+                    return
                 
-                # Ensure filename ends with a proper extension
-                if '.' not in filename:
-                    filename = filename + '.jpg'
+                # Read optional category + product_id from form fields
+                # (sent by admin.html alongside the file inputs)
+                category = ""
+                product_id = ""
+                for part in parser:
+                    if part.name == "category":
+                        category = (part.value or "").strip() if not isinstance(part.value, bytes) else part.value.decode("latin-1").strip()
+                    elif part.name == "product_id":
+                        product_id = (part.value or "").strip() if not isinstance(part.value, bytes) else part.value.decode("latin-1").strip()
                 
-                # Upload to Cloudinary
-                result = cloudinary.uploader.upload(
-                    file_bytes,
-                    folder="ma-fashion",
-                    public_id=filename.rsplit(".", 1)[0],
-                    overwrite=False,
-                    resource_type="image"
-                )
-                self._json(200, {"ok": True, "url": result["secure_url"]})
+                # Sanitize for folder use
+                category = "".join(c for c in category if c.isalnum() or c in "-_")
+                product_id = "".join(c for c in product_id if c.isalnum() or c in "-_")
+                
+                if not category:
+                    category = "Uncategorized"
+                if not product_id:
+                    product_id = "misc"
+                
+                folder_path = f"ma-fashion/{category}/{product_id}"
+                
+                urls = []
+                for raw, fname in uploaded:
+                    result = cloudinary.uploader.upload(
+                        raw,
+                        asset_folder=folder_path,
+                        use_asset_folder_as_public_id_prefix=True,
+                        overwrite=False,
+                        resource_type="image"
+                    )
+                    urls.append(result["secure_url"])
+                
+                self._json(200, {"ok": True, "urls": urls, "url": urls[0]})
                 
             except Exception as e:
                 self._json(500, {"ok": False, "error": str(e)})

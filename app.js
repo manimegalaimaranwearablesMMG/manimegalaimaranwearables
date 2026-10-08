@@ -38,7 +38,67 @@ let carouselSlides = [];
 document.addEventListener("DOMContentLoaded", () => {
   fetchProducts();
   setupListeners();
+  setupSidebar();
+  setupSearch();
+  setupFooterLinks();
 });
+
+function setupSidebar() {
+  const sidebar   = document.getElementById("sidebar");
+  const backdrop  = document.getElementById("sidebarBackdrop");
+  const hamburger = document.getElementById("hamburgerBtn");
+  if (!sidebar || !hamburger) return;
+
+  const open  = () => { sidebar.classList.add("open");  backdrop.classList.add("open"); };
+  const close = () => { sidebar.classList.remove("open"); backdrop.classList.remove("open"); };
+
+  hamburger.addEventListener("click", () => {
+    sidebar.classList.contains("open") ? close() : open();
+  });
+  backdrop.addEventListener("click", close);
+}
+
+function setupSearch() {
+  const toggle = document.getElementById("searchToggle");
+  const bar    = document.getElementById("searchBar");
+  const input  = document.getElementById("searchInput");
+  const closeB = document.getElementById("searchClose");
+  if (!toggle || !bar) return;
+
+  toggle.addEventListener("click", () => {
+    bar.classList.toggle("open");
+    if (bar.classList.contains("open")) input.focus();
+  });
+  closeB.addEventListener("click", () => {
+    bar.classList.remove("open");
+    input.value = "";
+    renderFiltered();
+  });
+
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { renderFiltered(); return; }
+    const matches = products.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      (p.description || "").toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q)
+    );
+    renderProducts(matches);
+  });
+}
+
+function setupFooterLinks() {
+  // Placeholder — replace "#" in index.html with real URLs later
+  document.querySelectorAll(".social-icon").forEach(a => {
+    a.addEventListener("click", e => {
+      if (a.getAttribute("href") === "#") {
+        e.preventDefault();
+        const s = a.dataset.social;
+        console.log("TODO: link " + s);
+      }
+    });
+  });
+}
 /* [END INIT] */
 
 
@@ -60,9 +120,28 @@ async function fetchProducts() {
 
     renderFiltered();
     initCarousel();
+    renderCategoryCards();
   } catch (e) {
     console.error("Could not load products.json", e);
   }
+}
+
+function renderCategoryCards() {
+  const grid = document.getElementById("categoryGrid");
+  if (!grid) return;
+  const cats = [...new Set(products.map(p => p.category))].sort();
+  grid.innerHTML = cats.map(cat => {
+    const first = products.find(p => p.category === cat);
+    const thumb = first ? ((first.images && first.images[0]) || first.image) : "";
+    const imgTag = thumb
+      ? `<img class="category-card-img" src="${thumb}" alt="${cat}">`
+      : `<div class="category-card-img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--text-muted);">🖼️</div>`;
+    return `
+      <a class="category-card" href="category.html?cat=${encodeURIComponent(cat)}">
+        ${imgTag}
+        <div class="category-card-name">${cat}</div>
+      </a>`;
+  }).join("");
 }
 /* [END FETCH] */
 
@@ -134,6 +213,7 @@ function renderProducts(items) {
     return;
   }
 
+  if (!items.length) { console.warn("renderProducts: empty list"); }
   container.innerHTML = items.map(p => {
     // Pick the first tag for the badge (prefer bestseller)
     const badge = p.tags.includes("bestseller") ? "Bestseller"
@@ -145,7 +225,7 @@ function renderProducts(items) {
 
     return `
     <div class="product-card" id="card-${p.id}">
-      <div class="img-box">
+      <div class="img-box" onclick="location.href='product.html?id=${p.id}'">
         <img src="${p.image}" alt="${p.title}" loading="lazy">
         ${badge ? `<span class="product-badge">${badge}</span>` : ""}
       </div>
@@ -157,7 +237,8 @@ function renderProducts(items) {
             <span class="mrp-price">₹${p.originalPrice.toLocaleString("en-IN")}</span>
           </div>
         </div>
-        <button class="btn-add" onclick="addToCart('${p.id}')">Add to Bag</button>
+        <button class="btn-add" onclick="event.stopPropagation(); addToCart('${p.id}')">Add to Cart</button>
+        <button class="btn-wa-card" onclick="event.stopPropagation(); orderOnWhatsApp('${p.id}')">📲 Checkout on WhatsApp</button>
       </div>
     </div>
   `;
@@ -315,6 +396,17 @@ function scrollToProduct(productId) {
 /* ═══════════════════════════════════════════════════════════════ */
 /* [CART] Add / remove / update                                    */
 /* ═══════════════════════════════════════════════════════════════ */
+function orderOnWhatsApp(productId) {
+  const p = products.find(x => x.id === productId);
+  if (!p) return;
+  const msg = `🛍️ *Product Enquiry*\n` +
+              `---------------------------------\n` +
+              `• ${p.title} - ₹${p.price}\n` +
+              `---------------------------------\n` +
+              `Hi, I want to order this. Please confirm availability.`;
+  window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
 function addToCart(productId) {
   const item = products.find(p => p.id === productId);
   if (!item) return;
@@ -362,6 +454,8 @@ function removeFromCart(index) {
 /* ═══════════════════════════════════════════════════════════════ */
 function setupListeners() {
   // Cart drawers
+  document.getElementById("loginBtn")?.addEventListener("click", openLoginModal);
+  document.getElementById("sidebarLogin")?.addEventListener("click", (e) => { e.preventDefault(); openLoginModal(); });
   document.getElementById("cartOpenBtn").onclick  = () => document.getElementById("cartOverlay").classList.add("open");
   document.getElementById("cartCloseBtn").onclick = () => document.getElementById("cartOverlay").classList.remove("open");
   document.getElementById("upiCloseBtn").onclick  = () => document.getElementById("upiModal").classList.remove("open");

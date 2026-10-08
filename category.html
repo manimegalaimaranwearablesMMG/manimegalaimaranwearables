@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Category | Mahadev Fashion Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d97706">
+</head>
+<body>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head"><span class="sidebar-logo">🔱</span><strong>Mahadev</strong></div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link"><span>🏠</span> Home</a>
+      <a href="category.html" class="sidebar-link active"><span>🛍️</span> Categories</a>
+      <a href="#" class="sidebar-link" id="sidebarLogin"><span>👤</span> Login</a>
+    </nav>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <header class="app-header">
+    <button class="hamburger" id="hamburgerBtn">☰</button>
+    <div class="brand">
+      <div>
+        <h1 id="catPageTitle">Category</h1>
+        <small>Curated Jewels & Ethnic Wardrobe</small>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="searchToggle">🔍</button>
+      <button class="icon-btn" id="loginBtn">👤</button>
+      <button class="cart-trigger" id="cartOpenBtn">🛒 <span class="cart-counter" id="cartCount">0</span></button>
+    </div>
+  </header>
+
+  <div class="search-bar" id="searchBar">
+    <input type="search" id="searchInput" placeholder="Search this category..." autocomplete="off">
+    <button class="search-close" id="searchClose">✕</button>
+  </div>
+
+  <main class="container">
+    <section class="products-grid" id="productsContainer"></section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-socials">
+      <a href="#" class="social-icon" data-social="instagram">📸</a>
+      <a href="#" class="social-icon" data-social="facebook">👍</a>
+      <a href="#" class="social-icon" data-social="whatsapp">💬</a>
+      <a href="#" class="social-icon" data-social="youtube">▶️</a>
+      <a href="#" class="social-icon" data-social="email">✉️</a>
+    </div>
+    <div class="footer-copy">© Mahadev Fashion Hub</div>
+  </footer>
+
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-card">
+      <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+      <h2>Login</h2>
+      <p class="login-note">Login is coming soon. For now, you can still shop and checkout as guest.</p>
+    </div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+  <script src="category.js"></script>
+</body>
+</html>

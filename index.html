@@ -11,9 +11,33 @@
 <body>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- [SIDEBAR] Collapsible left menu                                -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <span class="sidebar-logo">🔱</span>
+      <strong>Mahadev</strong>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link active" data-view="home">
+        <span>🏠</span> Home
+      </a>
+      <a href="category.html" class="sidebar-link" data-view="categories">
+        <span>🛍️</span> Categories
+      </a>
+      <a href="#" class="sidebar-link" id="sidebarLogin">
+        <span>👤</span> Login
+      </a>
+    </nav>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <!-- [END SIDEBAR] -->
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- [HEADER] Top app navigation                                    -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <header class="app-header">
+    <button class="hamburger" id="hamburgerBtn" aria-label="Menu">☰</button>
     <div class="brand">
       <!-- [LOGO] Replace src with your Cloudinary logo URL.            -->
       <!-- Supported: PNG, JPG, GIF, animated WebP, MP4 (video).       -->
@@ -34,16 +58,33 @@
       </div>
     </div>
     <div class="header-actions">
-      <a href="https://instagram.com" target="_blank" class="icon-link" aria-label="Instagram">📸</a>
+      <button class="icon-btn" id="searchToggle" aria-label="Search">🔍</button>
+      <button class="icon-btn" id="loginBtn" aria-label="Login">👤</button>
       <button class="cart-trigger" id="cartOpenBtn" aria-label="Shopping Cart">
         🛒 <span class="cart-counter" id="cartCount">0</span>
       </button>
     </div>
   </header>
+
+  <!-- [SEARCH BAR] Slides down below header -->
+  <div class="search-bar" id="searchBar">
+    <input type="search" id="searchInput" placeholder="Search products..." autocomplete="off">
+    <button class="search-close" id="searchClose">✕</button>
+  </div>
+  <!-- [END SEARCH BAR] -->
   <!-- [END HEADER] -->
 
   <!-- Main Viewport -->
   <main class="container">
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- [CATEGORY CARDS] Home view only                                -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <section class="category-cards" id="categoryCards">
+      <h2 class="section-title">Shop by Category</h2>
+      <div class="category-grid" id="categoryGrid"></div>
+    </section>
+    <!-- [END CATEGORY CARDS] -->
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- [CAROUSEL] Auto-sliding product hero slider                    -->
@@ -181,6 +222,39 @@
   </div>
   <!-- [END UPI MODAL] -->
 
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- [LOGIN MODAL] Placeholder — real auth later                    -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-card">
+      <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+      <h2>Login</h2>
+      <p class="login-note">Login is coming soon. For now, you can still shop and checkout as guest.</p>
+      <input type="email" id="loginEmail" placeholder="Email" disabled>
+      <input type="password" id="loginPassword" placeholder="Password" disabled>
+      <button class="btn btn-primary" disabled>Sign In (Coming Soon)</button>
+      <button class="btn btn-outline" disabled>Sign in with Google</button>
+    </div>
+  </div>
+  <!-- [END LOGIN MODAL] -->
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- [FOOTER] Social links + copyright                              -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <footer class="app-footer">
+    <div class="footer-socials">
+      <a href="#" class="social-icon" aria-label="Instagram" data-social="instagram">📸</a>
+      <a href="#" class="social-icon" aria-label="Facebook" data-social="facebook">👍</a>
+      <a href="#" class="social-icon" aria-label="WhatsApp" data-social="whatsapp">💬</a>
+      <a href="#" class="social-icon" aria-label="YouTube" data-social="youtube">▶️</a>
+      <a href="#" class="social-icon" aria-label="Email" data-social="email">✉️</a>
+    </div>
+    <div class="footer-copy">© Mahadev Fashion Hub</div>
+  </footer>
+  <!-- [END FOOTER] -->
+
+  <script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

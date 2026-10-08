@@ -1,15 +1,3 @@
-# Secrets - MOST IMPORTANT
 .env
-
-# Python cache
 __pycache__/
-*.py[cod]
-
-# Temporary files
-patch.txt
-pending_catalog.json
-*.bak
-
-# OS files
-.DS_Store
-Thumbs.db
+*.pyc

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Product | Mahadev Fashion Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d97706">
+</head>
+<body>
+  <header class="pd-header">
+    <button class="pd-back" onclick="history.length > 1 ? history.back() : location.href='index.html'">←</button>
+    <h1 id="pdHeaderTitle">Product</h1>
+    <button class="cart-trigger" id="cartOpenBtn">🛒 <span class="cart-counter" id="cartCount">0</span></button>
+  </header>
+
+  <main class="pd-container">
+    <section class="pd-gallery-wrap">
+      <div class="pd-gallery" id="pdGallery"></div>
+      <div class="pd-thumbs" id="pdThumbs"></div>
+    </section>
+
+    <section class="pd-info">
+      <h2 id="pdTitle">—</h2>
+      <div class="pd-price-row">
+        <span class="pd-price" id="pdPrice">₹0</span>
+        <span class="pd-mrp" id="pdMrp">₹0</span>
+        <span class="pd-tag" id="pdTag" style="display:none;"></span>
+      </div>
+      <p class="pd-desc" id="pdDesc"></p>
+    </section>
+
+    <section class="pd-also" id="pdAlso" style="display:none;">
+      <h3>You may also like</h3>
+      <div class="pd-also-grid" id="pdAlsoGrid"></div>
+    </section>
+
+    <div style="height:80px;"></div>
+  </main>
+
+  <div class="pd-bottom-bar">
+    <button class="pd-btn-add" id="pdAddBtn">🛒 Add to Cart</button>
+    <button class="pd-btn-wa" id="pdWaBtn">📲 Checkout on WhatsApp</button>
+  </div>
+
+  <div class="cart-overlay" id="cartOverlay">
+    <aside class="cart-drawer">
+      <div class="cart-header">
+        <h3>Your Shopping Bag</h3>
+        <button class="close-btn" id="cartCloseBtn">&times;</button>
+      </div>
+      <div class="cart-body" id="cartItemsList"><p class="empty-msg">Your shopping bag is empty.</p></div>
+      <div class="cart-footer">
+        <div class="cart-total-row"><span>Subtotal</span><strong id="cartTotalDisplay">₹0</strong></div>
+        <div class="checkout-fields">
+          <input type="text" id="custName" placeholder="Your Full Name" required>
+          <input type="tel" id="custPhone" placeholder="Mobile / WhatsApp Number" required>
+          <textarea id="custAddress" placeholder="Full Delivery Address with Pincode" rows="2" required></textarea>
+        </div>
+        <button class="btn-checkout" id="checkoutBtn">Proceed to Pay & WhatsApp Order</button>
+      </div>
+    </aside>
+  </div>
+
+  <script src="product.js"></script>
+</body>
+</html>

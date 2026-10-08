@@ -57,13 +57,38 @@ def parse_patch_file(filepath):
     return patches
 
 
-def apply_patches(patches):
+def apply_patches(patches, dry_run=False):
     if not patches:
         print("⚠️  No patches to apply.")
         return 0
     count = 0
     for p in patches:
         tf = p["file"]
+        mode = p.get("mode", "replace")
+
+        # ── CREATE mode ─────────────────────────────────────────
+        if mode == "create":
+            if os.path.exists(tf):
+                print(f"⚠️  Already exists, skipped: {tf}")
+                continue
+            # Auto-create parent folders if needed
+            parent = os.path.dirname(tf)
+            if parent and not os.path.exists(parent):
+                if dry_run:
+                    print(f"🧪 Would MKDIR [{parent}]")
+                else:
+                    os.makedirs(parent, exist_ok=True)
+                    print(f"📁 Created folder [{parent}]")
+            if dry_run:
+                print(f"🧪 Would CREATE [{tf}] ({len(p['content'])} chars)")
+            else:
+                with open(tf, "w", encoding="utf-8", newline="\n") as f:
+                    f.write(p["content"] + "\n")
+                print(f"✅ Created [{tf}]")
+            count += 1
+            continue
+
+        # ── REPLACE mode ────────────────────────────────────────
         if not os.path.exists(tf):
             print(f"❌ Missing file: {tf}")
             continue
@@ -72,9 +97,12 @@ def apply_patches(patches):
         find    = p["find"].replace("\r\n", "\n")
         replace = p["replace"].replace("\r\n", "\n")
         if find in data:
-            with open(tf, "w", encoding="utf-8", newline="\n") as f:
-                f.write(data.replace(find, replace, 1))
-            print(f"✅ Patched [{tf}]")
+            if dry_run:
+                print(f"🧪 Would patch [{tf}] → {find[:50]!r}…")
+            else:
+                with open(tf, "w", encoding="utf-8", newline="\n") as f:
+                    f.write(data.replace(find, replace, 1))
+                print(f"✅ Patched [{tf}]")
             count += 1
         else:
             print(f"❌ No match in [{tf}] → {find[:60]!r}")
@@ -130,8 +158,9 @@ def menu():
     print("  1.  Update files  +  Push to Git")
     print("  2.  Update files only  (no push)")
     print("  3.  Push only          (no patch)")
+    print("  4.  Dry-run preview    (no changes)")
     print("=" * 55)
-    return input("👉 Choose [1/2/3]: ").strip()
+    return input("👉 Choose [1/2/3/4]: ").strip()
 
 
 def main():
@@ -141,8 +170,20 @@ def main():
         print("    Create .env next to this script (see instructions).")
 
     choice = menu()
-    if choice not in ("1", "2", "3"):
+    if choice not in ("1", "2", "3", "4"):
         print("❌ Invalid.")
+        return
+
+    # 4 → dry run only
+    if choice == "4":
+        patches = parse_patch_file(PATCH_FILE)
+        if patches:
+            print(f"\n📦 {len(patches)} patch block(s) — DRY RUN:")
+            apply_patches(patches, dry_run=True)
+        else:
+            print("ℹ️  patch.txt empty.")
+        print("\n🏁 Done. Press Enter to close.")
+        input()
         return
 
     # 1 & 2 → apply patches + admin queue

@@ -30,9 +30,56 @@
     .row > div { flex: 1; }
 
     /* Image Preview */
-    .preview-box { width: 100%; height: 160px; border: 2px dashed var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; background: #fafaf9; position: relative; }
-    .preview-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
-    .preview-box span { color: var(--muted); font-size: 0.85rem; }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+      min-height: 80px;
+      padding: 10px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      background: #fafaf9;
+      margin-bottom: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-grid > span {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .preview-item {
+      position: relative;
+      aspect-ratio: 1/1;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .preview-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(220,38,38,0.9);
+      color: #fff;
+      border: none;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
     /* ═══════════════════════════════════════════════════════════ */
     /* [TAG CHECKBOXES] Multi-select tag picker                    */
@@ -128,11 +175,10 @@
 
       <input type="hidden" id="editProductId" value="">
 
-      <div class="preview-box" id="previewContainer">
-        <span id="previewPlaceholder">No Image Selected</span>
-        <img id="imgPreview" src="" alt="Product Preview">
+      <div class="preview-grid" id="previewGrid">
+        <span id="previewPlaceholder">No Images Selected (max 5)</span>
       </div>
-      <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelection(event)">
+      <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelection(event)">
 
       <label>Item Name</label>
       <input type="text" id="pTitle" placeholder="e.g. Antique Matte Peacock Choker Set">
@@ -223,7 +269,8 @@
     /* [STATE] Admin panel state                                   */
     /* ═══════════════════════════════════════════════════════════ */
     let productsList = [];
-    let currentImageFile = null;
+    let currentImageFiles = [];   // array of File objects (max 5)
+    let existingImageUrls = [];   // URLs kept when editing (no new upload)
     /* [END STATE] */
 
     /* ═══════════════════════════════════════════════════════════ */
@@ -314,17 +361,60 @@
     /* [IMAGE] Preview only (upload happens on save)                */
     /* ═══════════════════════════════════════════════════════════ */
     function handleImageSelection(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      currentImageFile = file;
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById("imgPreview").src = e.target.result;
-        document.getElementById("imgPreview").style.display = "block";
-        document.getElementById("previewPlaceholder").style.display = "none";
-      };
-      reader.readAsDataURL(file);
+      const remaining = 5 - currentImageFiles.length;
+      if (remaining <= 0) {
+        alert("Max 5 images per product.");
+        event.target.value = "";
+        return;
+      }
+
+      files.slice(0, remaining).forEach(f => currentImageFiles.push(f));
+      if (files.length > remaining) {
+        alert("Only first " + remaining + " added (max 5 total).");
+      }
+
+      event.target.value = "";
+      renderPreviewGrid();
+    }
+
+    function renderPreviewGrid() {
+      const grid = document.getElementById("previewGrid");
+      const ph = document.getElementById("previewPlaceholder");
+
+      const hasAny = currentImageFiles.length > 0 || existingImageUrls.length > 0;
+      if (!hasAny) {
+        grid.innerHTML = '<span id="previewPlaceholder">No Images Selected (max 5)</span>';
+        return;
+      }
+
+      const existingHTML = existingImageUrls.map((url, i) => `
+        <div class="preview-item">
+          <img src="${url}" alt="">
+          <button type="button" class="preview-remove" onclick="removeExistingImage(${i})">×</button>
+        </div>
+      `).join("");
+
+      const newHTML = currentImageFiles.map((file, i) => `
+        <div class="preview-item">
+          <img src="${URL.createObjectURL(file)}" alt="">
+          <button type="button" class="preview-remove" onclick="removeNewImage(${i})">×</button>
+        </div>
+      `).join("");
+
+      grid.innerHTML = existingHTML + newHTML;
+    }
+
+    function removeExistingImage(idx) {
+      existingImageUrls.splice(idx, 1);
+      renderPreviewGrid();
+    }
+
+    function removeNewImage(idx) {
+      currentImageFiles.splice(idx, 1);
+      renderPreviewGrid();
     }
     /* [END IMAGE] */
 
@@ -345,9 +435,10 @@
           `<span class="item-tag">${t.replace("_", " ")}</span>`
         ).join("");
 
+        const thumb = (item.images && item.images[0]) || item.image || "";
         return `
         <div class="item-card">
-          <img src="${item.image}" alt="">
+          <img src="${thumb}" alt="">
           <div class="item-meta">
             <strong>${item.title}</strong>
             <div style="color:var(--muted); font-size:0.75rem;">₹${item.price} • ${item.category}</div>
@@ -384,35 +475,36 @@
 
       const selectedTags = getSelectedTags();
 
-      // 1. Upload image if a new file was selected
-      let imgUrl = null;
-      if (currentImageFile) {
-        saveBtn.innerText = "⏳ Uploading image...";
+      // 1. Upload new images (if any were picked)
+      let uploadedUrls = [];
+      if (currentImageFiles.length > 0) {
+        saveBtn.innerText = "⏳ Uploading " + currentImageFiles.length + " image(s)...";
         saveBtn.disabled = true;
         try {
           const form = new FormData();
-          form.append("file", currentImageFile);
-          form.append("filename", currentImageFile.name);
+          currentImageFiles.forEach(f => form.append("file", f));
+          form.append("category", category);
+          form.append("product_id", editId || ("AJ-" + Date.now().toString().slice(-4)));
           const upRes = await fetch("http://localhost:5000/upload", {
             method: "POST",
             body: form
           });
           const upData = await upRes.json();
           if (!upData.ok) throw new Error(upData.error);
-          imgUrl = upData.url;
+          uploadedUrls = upData.urls || [upData.url];
         } catch (e) {
           alert("❌ Image upload failed: " + e.message);
           saveBtn.innerText = original;
           saveBtn.disabled = false;
           return;
         }
-      } else if (editId) {
-        const existing = productsList.find(p => p.id === editId);
-        if (existing) imgUrl = existing.image;
       }
 
-      if (!imgUrl) {
-        alert("Please select an image.");
+      // Combine: newly uploaded + kept existing (edit mode)
+      const finalImages = [...uploadedUrls, ...existingImageUrls];
+
+      if (finalImages.length === 0) {
+        alert("Please select at least one image.");
         saveBtn.innerText = original;
         saveBtn.disabled = false;
         return;
@@ -425,10 +517,11 @@
         price,
         originalPrice: mrp,
         category,
-        tag: freeTag,           // kept for backwards compat
-        tags: selectedTags,     // new multi-tag array
+        tag: freeTag,
+        tags: selectedTags,
         description: desc,
-        image: imgUrl
+        image: finalImages[0],       // backwards compat (first image)
+        images: finalImages          // new multi-image array
       };
 
       if (editId) {
@@ -449,7 +542,9 @@
     /* ═══════════════════════════════════════════════════════════ */
     function editProduct(index) {
       const p = productsList[index];
-      currentImageFile = null;
+      currentImageFiles = [];
+      existingImageUrls = (p.images && p.images.length) ? [...p.images]
+                        : (p.image ? [p.image] : []);
 
       document.getElementById("formTitle").innerText = "✏️ Edit Product";
       document.getElementById("editProductId").value = p.id;
@@ -461,10 +556,7 @@
       document.getElementById("pDesc").value  = p.description;
 
       setSelectedTags(p.tags || []);
-
-      document.getElementById("imgPreview").src = p.image;
-      document.getElementById("imgPreview").style.display = "block";
-      document.getElementById("previewPlaceholder").style.display = "none";
+      renderPreviewGrid();
 
       document.getElementById("saveBtn").innerText = "Update & Sync";
       document.getElementById("cancelEditBtn").style.display = "block";
@@ -484,13 +576,12 @@
       document.getElementById("pTag").value   = "";
       document.getElementById("pDesc").value  = "";
       document.getElementById("imageInput").value = "";
-      document.getElementById("imgPreview").src = "";
-      document.getElementById("imgPreview").style.display = "none";
-      document.getElementById("previewPlaceholder").style.display = "block";
       document.getElementById("saveBtn").innerText = "Publish & Update Store";
       document.getElementById("cancelEditBtn").style.display = "none";
-      currentImageFile = null;
+      currentImageFiles = [];
+      existingImageUrls = [];
       setSelectedTags([]);
+      renderPreviewGrid();
     }
     /* [END RESET] */
 
