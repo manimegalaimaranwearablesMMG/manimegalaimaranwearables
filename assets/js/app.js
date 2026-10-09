@@ -47,7 +47,16 @@ function setupSidebar() {
   const sidebar   = document.getElementById("sidebar");
   const backdrop  = document.getElementById("sidebarBackdrop");
   const hamburger = document.getElementById("hamburgerBtn");
+  const catToggle = document.getElementById("sidebarCategoriesToggle");
+  const subnav    = document.getElementById("sidebarSubnav");
   if (!sidebar || !hamburger) return;
+
+  if (catToggle && subnav) {
+    catToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      subnav.classList.toggle("open");
+    });
+  }
 
   const open  = () => { sidebar.classList.add("open");  backdrop.classList.add("open"); };
   const close = () => { sidebar.classList.remove("open"); backdrop.classList.remove("open"); };
@@ -118,7 +127,6 @@ async function fetchProducts() {
       }
     });
 
-    renderFiltered();
     initCarousel();
     renderCategoryCards();
   } catch (e) {
@@ -196,7 +204,11 @@ function getFilteredProducts() {
   return list;
 }
 
+let currentPage = 1;
+const PER_PAGE = 15;
+
 function renderFiltered() {
+  currentPage = 1;
   renderProducts(getFilteredProducts());
 }
 /* [END FILTER LOGIC] */
@@ -207,6 +219,7 @@ function renderFiltered() {
 /* ═══════════════════════════════════════════════════════════════ */
 function renderProducts(items) {
   const container = document.getElementById("productsContainer");
+  if (!container) return;
 
   if (items.length === 0) {
     container.innerHTML = `<p style="grid-column:1/-1;color:var(--text-muted);text-align:center;padding:40px 0;">No products match this filter.</p>`;
@@ -242,7 +255,23 @@ function renderProducts(items) {
       </div>
     </div>
   `;
-  }).join("");
+  }).join("") + renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  if (totalPages <= 1) return "";
+  let html = `<div class="pagination">`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn${i === currentPage ? " active" : ""}" onclick="goToPage(${i})">${i}</button>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function goToPage(n) {
+  currentPage = n;
+  renderFiltered();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 /* [END RENDER] */
 
@@ -290,11 +319,14 @@ function initCarousel() {
 
   // Build slides
   track.innerHTML = carouselSlides.map(p => `
-    <div class="carousel-slide" data-product-id="${p.id}">
-      <img src="${p.image}" alt="${p.title}" loading="eager">
-      <div class="carousel-slide-caption">
-        <h3>${p.title}</h3>
-        <div class="slide-price">₹${p.price.toLocaleString("en-IN")}</div>
+    <div class="carousel-pair" data-product-id="${p.id}">
+      <div class="carousel-card-img">
+        <img src="${p.image}" alt="${p.title}" loading="eager">
+      </div>
+      <div class="carousel-card-desc">
+        <h4>${p.title}</h4>
+        <div class="desc-price">₹${p.price.toLocaleString("en-IN")}</div>
+        <div class="desc-text">${p.description || ""}</div>
       </div>
     </div>
   `).join("");
@@ -308,7 +340,7 @@ function initCarousel() {
   updateCarouselPosition();
 
   // Slide click → scroll to product card
-  track.querySelectorAll(".carousel-slide").forEach(slide => {
+  track.querySelectorAll(".carousel-pair").forEach(slide => {
     slide.addEventListener("click", () => {
       const id = slide.dataset.productId;
       scrollToProduct(id);
