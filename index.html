@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mahadev Fashion Hub | Mahadev Group</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/css/style.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#d97706">
 </head>
@@ -95,64 +95,15 @@
     <!-- ══════════════════════════════════════════════════════════════ -->
     <section class="hero-carousel" id="heroCarousel" aria-label="Featured products">
       <div class="carousel-track" id="carouselTrack">
-        <!-- Slides injected by app.js -->
         <div class="carousel-loading">Loading featured picks…</div>
       </div>
-
-      <!-- [CAROUSEL DOTS] Small indicator dots at the bottom -->
       <div class="carousel-dots" id="carouselDots" aria-label="Slide navigation"></div>
     </section>
-    <!-- [END CAROUSEL] -->
 
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- [FILTERS] Tag filter chips (Best Sellers, Most Loved, etc.)    -->
-    <!-- -------------------------------------------------------------- -->
-    <!-- Separate row above category pills.                             -->
-    <!-- Click chip → filters grid by product.tags array.               -->
-    <!-- Handled in app.js → setupFilterChips()                         -->
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <div class="filter-chips" id="filterChips" role="tablist" aria-label="Product filters">
-      <button class="filter-chip active" data-tag="all"          role="tab">All</button>
-      <button class="filter-chip"        data-tag="bestseller"   role="tab">⭐ Best Sellers</button>
-      <button class="filter-chip"        data-tag="most_loved"   role="tab">💖 Most Loved</button>
-      <button class="filter-chip"        data-tag="trending"     role="tab">🔥 Trending</button>
-      <button class="filter-chip"        data-tag="new"          role="tab">✨ New</button>
-      <button class="filter-chip"        data-tag="sale"         role="tab">🏷️ Sale</button>
-    </div>
-    <!-- [END FILTERS] -->
-
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- [CATEGORIES] Category filter pills                             -->
-    <!-- -------------------------------------------------------------- -->
-    <!-- Categories must match admin.html dropdown exactly:             -->
-    <!-- Necklaces, Earrings, Bangles, Rings, Sarees, Ornaments,        -->
-    <!-- Accessories. Previously mismatched (Jewelry vs Necklaces).     -->
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <div class="categories" id="categoryBar">
-      <button class="cat-pill active" data-cat="all">All Collection</button>
-      <button class="cat-pill"        data-cat="Necklaces">Necklaces</button>
-      <button class="cat-pill"        data-cat="Earrings">Earrings</button>
-      <button class="cat-pill"        data-cat="Bangles">Bangles</button>
-      <button class="cat-pill"        data-cat="Rings">Rings</button>
-      <button class="cat-pill"        data-cat="Sarees">Sarees & Ethnic</button>
-      <button class="cat-pill"        data-cat="Ornaments">Hair Ornaments</button>
-      <button class="cat-pill"        data-cat="Accessories">Accessories</button>
-    </div>
-    <!-- [END CATEGORIES] -->
-
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- [PRODUCT GRID] Main product listing                            -->
-    <!-- -------------------------------------------------------------- -->
-    <!-- Injected by app.js → renderProducts()                          -->
-    <!-- Order logic (when data-cat="all" + data-tag="all"):            -->
-    <!--   1. Bestsellers first                                         -->
-    <!--   2. Then most_loved                                           -->
-    <!--   3. Then remaining products shuffled randomly                 -->
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <section class="products-grid" id="productsContainer">
-      <!-- Injected by app.js -->
+    <section class="category-cards" id="categoryCards">
+      <h2 class="section-title">Shop by Category</h2>
+      <div class="category-grid" id="categoryGrid"></div>
     </section>
-    <!-- [END PRODUCT GRID] -->
 
   </main>
 
@@ -253,8 +204,8 @@
   </footer>
   <!-- [END FOOTER] -->
 
-  <script src="firebase-config.js"></script>
-  <script src="auth.js"></script>
-  <script src="app.js"></script>
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

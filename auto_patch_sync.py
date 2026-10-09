@@ -37,13 +37,31 @@ def parse_patch_file(filepath):
         content = f.read()
 
     patches = []
-    for sec in content.split("FILE:"):
+    for sec in content.split("\nFILE:"):
         sec = sec.strip()
         if not sec:
             continue
         lines = sec.splitlines()
         filename = lines[0].strip()
+        if filename.startswith("FILE:"):
+            filename = filename[5:].strip()
         remaining = "\n".join(lines[1:])
+
+        # CREATE
+        if "<<<<<<< CREATE" in remaining:
+            body, _ = remaining.split(">>>>>>>", 1)
+            body = body.split("<<<<<<< CREATE", 1)[1].strip("\r\n")
+            patches.append({"file": filename, "mode": "create", "content": body})
+            continue
+
+        # COPY
+        if "<<<<<<< COPY" in remaining:
+            body, _ = remaining.split(">>>>>>>", 1)
+            src = body.split("<<<<<<< COPY", 1)[1].strip()
+            patches.append({"file": filename, "mode": "copy", "source": src})
+            continue
+
+        # FIND/REPLACE
         for blk in remaining.split("<<<<<<< FIND"):
             if "=======" in blk and ">>>>>>>" in blk:
                 find_part, rest = blk.split("=======", 1)
@@ -51,9 +69,8 @@ def parse_patch_file(filepath):
                 find_str = find_part.strip("\r\n")
                 replace_str = replace_part.strip("\r\n")
                 if find_str:
-                    patches.append({"file": filename,
-                                    "find": find_str,
-                                    "replace": replace_str})
+                    patches.append({"file": filename, "mode": "replace",
+                                    "find": find_str, "replace": replace_str})
     return patches
 
 
@@ -85,6 +102,33 @@ def apply_patches(patches, dry_run=False):
                 with open(tf, "w", encoding="utf-8", newline="\n") as f:
                     f.write(p["content"] + "\n")
                 print(f"✅ Created [{tf}]")
+            count += 1
+            continue
+
+        # ── COPY mode ───────────────────────────────────────────
+        if mode == "copy":
+            src = p["source"]
+            if not os.path.exists(src):
+                print(f"❌ Copy source missing: {src}")
+                continue
+            if os.path.exists(tf):
+                print(f"⚠️  Already exists, skipped: {tf}")
+                continue
+            parent = os.path.dirname(tf)
+            if parent and not os.path.exists(parent):
+                if dry_run:
+                    print(f"🧪 Would MKDIR [{parent}]")
+                else:
+                    os.makedirs(parent, exist_ok=True)
+                    print(f"📁 Created folder [{parent}]")
+            if dry_run:
+                print(f"🧪 Would COPY [{src}] → [{tf}]")
+            else:
+                with open(src, "r", encoding="utf-8") as f:
+                    content = f.read()
+                with open(tf, "w", encoding="utf-8", newline="\n") as f:
+                    f.write(content)
+                print(f"✅ Copied [{src}] → [{tf}]")
             count += 1
             continue
 
