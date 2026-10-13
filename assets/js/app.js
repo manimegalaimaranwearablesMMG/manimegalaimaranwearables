@@ -6,6 +6,19 @@ const CONFIG = {
   upiId: "yourname@okhdfcbank",       // ← CHANGE: your real UPI ID
   whatsappNumber: "919876543210"      // ← CHANGE: 91 + 10-digit number
 };
+
+/* Saved customer details — persist in localStorage */
+const SAVED_CUSTOMER_KEY = "ma_fashion_customer";
+
+function saveCustomerDetails(details) {
+  try { localStorage.setItem(SAVED_CUSTOMER_KEY, JSON.stringify(details)); } catch(e) {}
+}
+function loadCustomerDetails() {
+  try { return JSON.parse(localStorage.getItem(SAVED_CUSTOMER_KEY) || "null"); } catch(e) { return null; }
+}
+function clearCustomerDetails() {
+  try { localStorage.removeItem(SAVED_CUSTOMER_KEY); } catch(e) {}
+}
 /* [END CONFIG] */
 
 
@@ -41,7 +54,23 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSidebar();
   setupSearch();
   setupFooterLinks();
+  restoreSavedCustomer();
 });
+
+function restoreSavedCustomer() {
+  const c = loadCustomerDetails();
+  if (!c) return;
+  const n = document.getElementById("custName");
+  const p = document.getElementById("custPhone");
+  const a = document.getElementById("custAddress");
+  const pn = document.getElementById("custPincode");
+  const sv = document.getElementById("saveDetails");
+  if (n && c.name) n.value = c.name;
+  if (p && c.phone) p.value = c.phone;
+  if (a && c.address) a.value = c.address;
+  if (pn && c.pincode) pn.value = c.pincode;
+  if (sv) sv.checked = true;
+}
 
 function setupSidebar() {
   const sidebar   = document.getElementById("sidebar");
@@ -515,16 +544,32 @@ function setupListeners() {
   // Checkout
   document.getElementById("checkoutBtn").onclick = () => {
     if (cart.length === 0) return alert("Your bag is empty!");
-    const name  = document.getElementById("custName").value.trim();
-    const phone = document.getElementById("custPhone").value.trim();
-    const addr  = document.getElementById("custAddress").value.trim();
 
-    if (!name || !phone || !addr) return alert("Please fill in your name, phone, and address.");
+    const name    = document.getElementById("custName").value.trim();
+    const phone   = document.getElementById("custPhone").value.trim();
+    const addr    = document.getElementById("custAddress").value.trim();
+    const pincode = (document.getElementById("custPincode") || {}).value;
+    const save    = (document.getElementById("saveDetails") || {}).checked;
+
+    if (!name || !phone || !addr) {
+      return alert("Please fill in your name, phone, and address.");
+    }
+    if (pincode && !/^\d{6}$/.test(pincode.trim())) {
+      return alert("Pincode must be 6 digits.");
+    }
+
+    if (save) {
+      saveCustomerDetails({ name, phone, address: addr, pincode: (pincode || "").trim() });
+    }
 
     const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     const orderId = "AJ-" + Math.floor(1000 + Math.random() * 9000);
 
-    pendingOrder = { orderId, name, phone, addr, total, items: [...cart] };
+    pendingOrder = {
+      orderId, name, phone,
+      addr: addr + (pincode ? " - " + pincode.trim() : ""),
+      total, items: [...cart]
+    };
     openUpiModal(pendingOrder);
   };
 }
@@ -535,7 +580,7 @@ function setupListeners() {
 /* [UPI] Payment modal                                             */
 /* ═══════════════════════════════════════════════════════════════ */
 function openUpiModal(order) {
-  const upiUri = `upi://pay?pa=${encodeURIComponent(CONFIG.upiId)}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${order.total}&cu=INR&tn=${encodeURIComponent("Order " + order.orderId)}`;
+  const upiUri = `upi://pay?pa=${encodeURIComponent(CONFIG.upiId)}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${order.total}&cu=INR&tn=${encodeURIComponent("Order " + order.orderId)}&tr=${encodeURIComponent(order.orderId)}`;
   const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
 
   document.getElementById("upiQrImg").src            = qrUrl;
@@ -548,7 +593,19 @@ function openUpiModal(order) {
     alert("UPI ID copied!");
   };
 
-  document.getElementById("proceedWhatsAppBtn").onclick = () => triggerWhatsApp(order);
+  const waBtn = document.getElementById("proceedWhatsAppBtn");
+  waBtn.onclick = () => {
+    const paid = confirm(
+      "Did you complete the UPI payment?\\n\\n" +
+      "Tap OK if you paid.\\n" +
+      "Tap Cancel if you didn't pay yet."
+    );
+    if (paid) {
+      triggerWhatsApp(order);
+    } else {
+      return;
+    }
+  };
 
   document.getElementById("cartOverlay").classList.remove("open");
   document.getElementById("upiModal").classList.add("open");
