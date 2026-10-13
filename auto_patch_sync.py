@@ -178,6 +178,19 @@ def apply_admin_queue():
 # ─────────────────────────────────────────────────────
 def git_push(commit_msg="Update store via auto-patch"):
     print("\n🚀 Pushing to GitHub...")
+
+    env = load_env()
+    user   = env.get("GITHUB_USER", "")
+    repo   = env.get("GITHUB_REPO", "")
+    token  = env.get("GITHUB_TOKEN", "")
+    branch = env.get("GITHUB_BRANCH", "main")
+
+    if not user or not repo or not token:
+        print("❌ .env missing GITHUB_USER / GITHUB_REPO / GITHUB_TOKEN.")
+        return
+
+    remote_url = f"https://{user}:{token}@github.com/{user}/{repo}.git"
+
     try:
         subprocess.run(["git", "add", "."], check=True)
         res = subprocess.run(["git", "status", "--porcelain"],
@@ -186,7 +199,7 @@ def git_push(commit_msg="Update store via auto-patch"):
             print("ℹ️  Nothing to commit.")
             return
         subprocess.run(["git", "commit", "-m", commit_msg], check=True)
-        subprocess.run(["git", "push", "origin", "main"], check=True)
+        subprocess.run(["git", "push", remote_url, f"HEAD:{branch}"], check=True)
         print("🎉 Pushed! GitHub Pages live in ~20s.")
     except subprocess.CalledProcessError as e:
         print("❌ Git error:", e)
