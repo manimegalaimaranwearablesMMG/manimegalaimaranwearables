@@ -6,7 +6,7 @@
   <title>Mahadev Fashion Hub | Mahadev Group</title>
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#d97706">
+  <meta name="theme-caolor" content="#d97706">
 </head>
 <body>
 
@@ -22,19 +22,9 @@
       <a href="index.html" class="sidebar-link active" data-view="home">
         <span>🏠</span> Home
       </a>
-      <a href="#" class="sidebar-link" id="sidebarCategoriesToggle" data-view="categories">
+      <a href="category.html" class="sidebar-link" data-view="categories">
         <span>🛍️</span> Categories
       </a>
-      <div class="sidebar-subnav" id="sidebarSubnav">
-        <a href="category.html?cat=all" class="sidebar-sublink">All</a>
-        <a href="category.html?cat=Necklaces" class="sidebar-sublink">Necklaces</a>
-        <a href="category.html?cat=Earrings" class="sidebar-sublink">Earrings</a>
-        <a href="category.html?cat=Bangles" class="sidebar-sublink">Bangles</a>
-        <a href="category.html?cat=Rings" class="sidebar-sublink">Rings</a>
-        <a href="category.html?cat=Sarees" class="sidebar-sublink">Sarees & Ethnic</a>
-        <a href="category.html?cat=Ornaments" class="sidebar-sublink">Hair Ornaments</a>
-        <a href="category.html?cat=Accessories" class="sidebar-sublink">Accessories</a>
-      </div>
       <a href="#" class="sidebar-link" id="sidebarLogin">
         <span>👤</span> Login
       </a>
@@ -87,19 +77,11 @@
   <!-- Main Viewport -->
   <main class="container">
 
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- [CATEGORY CARDS] Home view only                                -->
-    <!-- ══════════════════════════════════════════════════════════════ -->
     <section class="hero-carousel" id="heroCarousel" aria-label="Featured products">
-      <div class="carousel-left">
-        <img src="LEFT_BRAND_IMAGE_URL" alt="Mahadev Fashion Hub" onerror="this.style.display='none';">
+      <div class="carousel-track" id="carouselTrack">
+        <div class="carousel-loading">Loading featured picks…</div>
       </div>
-      <div class="carousel-right">
-        <div class="carousel-track" id="carouselTrack">
-          <div class="carousel-loading">Loading featured picks…</div>
-        </div>
-        <div class="carousel-dots" id="carouselDots" aria-label="Slide navigation"></div>
-      </div>
+      <div class="carousel-dots" id="carouselDots" aria-label="Slide navigation"></div>
     </section>
 
     <section class="category-cards" id="categoryCards">
