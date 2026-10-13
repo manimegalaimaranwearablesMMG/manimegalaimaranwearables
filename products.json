@@ -1,5 +1,19 @@
 [
   {
+    "id": "AJ-7928",
+    "title": "CHOKER",
+    "price": 800,
+    "originalPrice": 1000,
+    "category": "Earrings",
+    "tag": "AGDAREAAGA",
+    "tags": [],
+    "description": "AGEAEA",
+    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1791933886/ma-fashion/Earrings/AJ-1109/zgtlbqp6eebwtfqokpfd.png",
+    "images": [
+      "https://res.cloudinary.com/ma-fashion/image/upload/v1791933886/ma-fashion/Earrings/AJ-1109/zgtlbqp6eebwtfqokpfd.png"
+    ]
+  },
+  {
     "id": "AJ-1343",
     "title": "AGA",
     "price": 12,
