@@ -1,4 +1,32 @@
 const CONFIG = { storeName: "MAHADEV FASHION HUB", upiId: "yourname@okhdfcbank", whatsappNumber: "919876543210" };
+
+const SAVED_CUSTOMER_KEY = "ma_fashion_customer";
+const FREE_SHIPPING_ABOVE = 999;
+
+const SHIPPING_ZONES = [
+  { from: 600001, to: 643999, fee:  60, name: "Tamil Nadu" },
+  { from: 560001, to: 591999, fee:  80, name: "Karnataka" },
+  { from: 670001, to: 695999, fee:  80, name: "Kerala" },
+  { from: 500001, to: 539999, fee:  80, name: "Andhra / Telangana" },
+  { from: 400001, to: 445999, fee:  90, name: "Maharashtra / Goa" },
+  { from: 360001, to: 396999, fee:  90, name: "Gujarat" },
+  { from: 110001, to: 122099, fee: 120, name: "Delhi NCR" }
+];
+
+function getShippingZone(pincode) {
+  const pin = parseInt(pincode, 10);
+  if (!pincode || isNaN(pin) || pin < 100000 || pin > 855999) return null;
+  return SHIPPING_ZONES.find(z => pin >= z.from && pin <= z.to)
+      || { fee: 150, name: "Rest of India" };
+}
+
+function loadCustomerDetails() {
+  try { return JSON.parse(localStorage.getItem(SAVED_CUSTOMER_KEY) || "null"); } catch(e) { return null; }
+}
+function saveCustomerDetails(d) {
+  try { localStorage.setItem(SAVED_CUSTOMER_KEY, JSON.stringify(d)); } catch(e) {}
+}
+
 let products = [];
 let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 let activeCat = "all";
@@ -17,6 +45,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupSidebar();
   setupSearch();
   setupCart();
+  setupCartDrawer();
+  restoreSavedCustomer();
+  updateCartUI();
 });
 
 function renderProducts() {
@@ -46,7 +77,7 @@ function renderProducts() {
             </div>
           </div>
           <button class="btn-add" onclick="addToCart('${p.id}')">Add to Cart</button>
-          <button class="btn-wa-card" onclick="orderOnWhatsApp('${p.id}')">📲 Checkout on WhatsApp</button>
+          <button class="btn-wa-card" onclick="checkoutSingleProduct('${p.id}')">📲 Checkout on WhatsApp</button>
         </div>
       </div>`;
   }).join("");
@@ -60,15 +91,142 @@ function addToCart(id) {
   updateCartUI();
 }
 
-function orderOnWhatsApp(id) {
-  const p = products.find(x => x.id === id); if (!p) return;
-  const msg = `🛍️ *Product Enquiry*\n---------------------------------\n• ${p.title} - ₹${p.price}\n---------------------------------\nHi, I want to order this.`;
-  window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
-}
+
 
 function updateCartUI() {
   const el = document.getElementById("cartCount");
   if (el) el.innerText = cart.reduce((s,i) => s + i.qty, 0);
+
+  const list = document.getElementById("cartItemsList");
+  if (!list) return;
+  if (cart.length === 0) {
+    list.innerHTML = `<p class="empty-msg">Your shopping bag is empty.</p>`;
+  } else {
+    list.innerHTML = cart.map((i, idx) => `
+      <div class="cart-item">
+        <div><strong>${i.title}</strong><div>₹${i.price} × ${i.qty}</div></div>
+        <button onclick="removeFromCart(${idx})" style="background:none;border:none;color:red;cursor:pointer;">✕</button>
+      </div>`).join("");
+  }
+  updateShippingTotals();
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartUI();
+}
+
+function updateShippingTotals() {
+  const subtotalEl = document.getElementById("cartSubtotalDisplay");
+  const shippingEl = document.getElementById("cartShippingDisplay");
+  const totalEl    = document.getElementById("cartTotalDisplay");
+  const pinEl      = document.getElementById("custPincode");
+  if (!totalEl) return;
+
+  const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+  let shipping = 0;
+  let zoneName = "";
+
+  if (subtotal >= FREE_SHIPPING_ABOVE) {
+    shipping = 0;
+    zoneName = "Free";
+  } else if (pinEl && pinEl.value.trim().length === 6) {
+    const zone = getShippingZone(pinEl.value.trim());
+    if (zone) { shipping = zone.fee; zoneName = zone.name; }
+  }
+
+  const grand = subtotal + shipping;
+  if (subtotalEl) subtotalEl.innerText = `₹${subtotal.toLocaleString("en-IN")}`;
+  if (shippingEl) shippingEl.innerText = shipping === 0
+    ? "Free"
+    : `₹${shipping.toLocaleString("en-IN")}${zoneName ? " (" + zoneName + ")" : ""}`;
+  totalEl.innerText = `₹${grand.toLocaleString("en-IN")}`;
+  return { subtotal, shipping, grand, zoneName };
+}
+
+function restoreSavedCustomer() {
+  const c = loadCustomerDetails();
+  if (!c) return;
+  const n = document.getElementById("custName");
+  const p = document.getElementById("custPhone");
+  const a = document.getElementById("custAddress");
+  const pn = document.getElementById("custPincode");
+  const sv = document.getElementById("saveDetails");
+  if (n && c.name) n.value = c.name;
+  if (p && c.phone) p.value = c.phone;
+  if (a && c.address) a.value = c.address;
+  if (pn && c.pincode) pn.value = c.pincode;
+  if (sv) sv.checked = true;
+}
+
+function openCheckout() {
+  document.getElementById("cartOverlay").classList.add("open");
+}
+
+function setupCartDrawer() {
+  const cartBtn = document.getElementById("cartOpenBtn");
+  if (cartBtn) cartBtn.onclick = openCheckout;
+  const closeBtn = document.getElementById("cartCloseBtn");
+  if (closeBtn) closeBtn.onclick = () => document.getElementById("cartOverlay").classList.remove("open");
+
+  const pinEl = document.getElementById("custPincode");
+  if (pinEl) pinEl.addEventListener("input", updateShippingTotals);
+
+  const checkoutBtn = document.getElementById("checkoutBtn");
+  if (checkoutBtn) checkoutBtn.onclick = () => {
+    if (cart.length === 0) return alert("Your bag is empty!");
+
+    const name    = document.getElementById("custName").value.trim();
+    const phone   = document.getElementById("custPhone").value.trim();
+    const addr    = document.getElementById("custAddress").value.trim();
+    const pincode = (document.getElementById("custPincode") || {}).value || "";
+    const save    = (document.getElementById("saveDetails") || {}).checked;
+
+    if (!name || !phone || !addr) return alert("Please fill in your name, phone, and address.");
+    if (pincode && !/^\d{6}$/.test(pincode.trim())) return alert("Pincode must be 6 digits.");
+
+    if (save) saveCustomerDetails({ name, phone, address: addr, pincode: pincode.trim() });
+
+    const totals = updateShippingTotals();
+    const orderId = "AJ-" + Math.floor(1000 + Math.random() * 9000);
+    const fullAddr = addr + (pincode ? " - " + pincode.trim() : "");
+
+    const itemList = cart.map(i => `• ${i.title} (x${i.qty}) - ₹${i.price * i.qty}`).join("\n");
+    const shipLine = totals.shipping === 0
+      ? `🚚 Shipping: Free`
+      : `🚚 Shipping: ₹${totals.shipping}${totals.zoneName ? " (" + totals.zoneName + ")" : ""}`;
+    const msg = `🛍️ *NEW ORDER: #${orderId}*\n` +
+                `---------------------------------\n` +
+                `${itemList}\n` +
+                `---------------------------------\n` +
+                `🧾 Subtotal: ₹${totals.subtotal}\n` +
+                `${shipLine}\n` +
+                `💰 *Grand Total: ₹${totals.grand}*\n` +
+                `💳 *Payment Method:* UPI (${CONFIG.upiId})\n\n` +
+                `📍 *Delivery:*\nName: ${name}\nPhone: ${phone}\nAddress: ${fullAddr}\n\n` +
+                `✅ *I am attaching my payment screenshot below.*`;
+
+    const paid = confirm("Did you complete the UPI payment?\\n\\nTap OK if you paid.\\nTap Cancel if not.");
+    if (!paid) return;
+
+    window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+    cart = [];
+    localStorage.setItem("cart", "[]");
+    updateCartUI();
+    document.getElementById("cartOverlay").classList.remove("open");
+  };
+}
+
+function checkoutSingleProduct(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const existing = cart.find(c => c.id === id);
+  if (existing) existing.qty += 1;
+  else cart.push({ ...p, qty: 1 });
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartUI();
+  document.getElementById("cartOverlay").classList.add("open");
 }
 
 function setupSidebar() {
@@ -88,7 +246,6 @@ function setupSearch() {
 }
 
 function setupCart() {
-  document.getElementById("cartOpenBtn")?.addEventListener("click", () => alert("Cart drawer coming soon."));
   document.getElementById("loginBtn")?.addEventListener("click", openLoginModal);
   document.getElementById("sidebarLogin")?.addEventListener("click", e => { e.preventDefault(); openLoginModal(); });
 }
