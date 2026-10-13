@@ -1108,6 +1108,235 @@ body > * { position: relative; z-index: 1; }
 }
 /* [END PRODUCT GRID] */
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* [RESPONSIVE] Dynamic mobile / tablet / desktop                   */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Container padding tighter on mobile */
+@media (max-width: 600px) {
+  .container {
+    padding: 10px;
+  }
+
+  /* Header — smaller */
+  .app-header {
+    padding: 10px 12px;
+  }
+  .brand h1 {
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+  .brand small {
+    font-size: 0.6rem;
+  }
+  .brand-logo,
+  .logo-icon-fallback {
+    width: 34px;
+    height: 34px;
+    font-size: 1.4rem;
+  }
+  .hamburger {
+    font-size: 1.3rem;
+    padding: 2px 4px;
+  }
+  .icon-btn {
+    font-size: 1.05rem;
+    padding: 2px 4px;
+  }
+  .cart-trigger {
+    padding: 5px 9px;
+    font-size: 0.85rem;
+  }
+  .cart-counter {
+    width: 16px;
+    height: 16px;
+    font-size: 0.62rem;
+  }
+
+  /* Section title smaller */
+  .section-title {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  /* Carousel — shorter on mobile */
+  .hero-carousel {
+    height: auto;
+    flex-direction: column;
+    border-radius: 18px;
+    margin-bottom: 16px;
+  }
+  .carousel-left {
+    flex: 0 0 auto;
+    height: 140px;
+    border-right: none;
+    border-bottom: 1px solid rgba(212,175,55,0.35);
+  }
+  .carousel-right {
+    flex: 0 0 auto;
+    height: 300px;
+  }
+  .carousel-pair {
+    padding: 6px;
+    gap: 5px;
+  }
+  .carousel-card-desc h4 {
+    font-size: 0.72rem;
+    line-height: 1.15;
+  }
+  .carousel-card-desc .desc-price {
+    font-size: 0.78rem;
+  }
+  .carousel-card-desc .desc-text {
+    font-size: 0.62rem;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Category grid — 2 cols on phone */
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .category-card {
+    border-radius: 14px;
+  }
+  .category-card-name {
+    padding: 9px 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.8px;
+  }
+
+  /* Product grid — 2 cols on phone */
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .product-card {
+    border-radius: 14px;
+  }
+  .product-info {
+    padding: 8px;
+  }
+  .product-info h4 {
+    font-size: 0.78rem;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .current-price {
+    font-size: 0.88rem;
+  }
+  .mrp-price {
+    font-size: 0.68rem;
+  }
+  .btn-add {
+    padding: 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.3px;
+  }
+  .btn-wa-card {
+    padding: 7px;
+    font-size: 0.68rem;
+  }
+  .product-badge {
+    font-size: 0.55rem;
+    padding: 3px 7px;
+    top: 6px;
+    left: 6px;
+  }
+
+  /* Chips + pills — smaller */
+  .filter-chips,
+  .categories {
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+  .filter-chip,
+  .cat-pill {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* Footer smaller */
+  .app-footer {
+    padding: 18px 12px 80px;
+  }
+  .social-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+  .footer-copy {
+    font-size: 0.68rem;
+  }
+
+  /* Modals full-width on phone */
+  .upi-card,
+  .login-card {
+    max-width: 100%;
+    padding: 16px 14px;
+  }
+
+  /* Product detail page */
+  .pd-header {
+    padding: 8px 10px;
+  }
+  .pd-header h1 {
+    font-size: 0.85rem;
+  }
+  .pd-back {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+  .pd-info {
+    padding: 14px 12px;
+  }
+  .pd-info h2 {
+    font-size: 1rem;
+  }
+  .pd-price {
+    font-size: 1.2rem;
+  }
+  .pd-mrp {
+    font-size: 0.85rem;
+  }
+  .pd-desc {
+    font-size: 0.82rem;
+  }
+  .pd-thumb {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .pd-bottom-bar {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .pd-btn-add,
+  .pd-btn-wa {
+    padding: 10px;
+    font-size: 0.78rem;
+    border-radius: 8px;
+  }
+
+  /* Pagination smaller */
+  .page-btn {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.78rem;
+  }
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 900px) {
+  .category-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .pagination {
   grid-column: 1 / -1;
   display: flex;
