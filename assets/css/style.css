@@ -1424,20 +1424,85 @@ body > * { position: relative; z-index: 1; }
 
 
 /* ─── CAROUSEL STACKS ON MOBILE ─── */
+/* ─── MOBILE: compact carousel, image on top, text below ─── */
 @media (max-width: 700px) {
   .hero-carousel {
-    height: auto;
+    height: 32vh;
+    min-height: 210px;
+    max-height: 300px;
     flex-direction: column;
-    min-height: 0;
+    border-radius: 16px;
+    margin-bottom: 12px;
   }
+
+  /* Tiny brand strip on top */
   .carousel-left {
     flex: 0 0 auto;
-    height: clamp(70px, 18vw, 110px);
+    height: 42px;
     border-right: none;
-    border-bottom: 2px solid var(--primary);
+    border-bottom: 1px solid var(--border-gold);
   }
+
+  /* Slides area fills the rest */
   .carousel-right {
-    flex: 0 0 auto;
-    height: clamp(160px, 42vw, 220px);
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+  }
+
+  /* Each pair: image on top, desc below (vertical stack) */
+  .carousel-pair {
+    flex-direction: column;
+    padding: 6px;
+    gap: 4px;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .carousel-card-img {
+    width: 100%;
+    height: 55%;
+    aspect-ratio: auto;
+    border-radius: 8px;
+  }
+
+  .carousel-card-desc {
+    width: 100%;
+    height: 45%;
+    aspect-ratio: auto;
+    border-radius: 8px;
+    padding: 6px 8px;
+    gap: 2px;
+    justify-content: center;
+  }
+
+  .carousel-card-desc h4 {
+    font-size: 0.78rem;
+    line-height: 1.1;
+    -webkit-line-clamp: 1;
+  }
+  .carousel-card-desc .desc-price {
+    font-size: 0.82rem;
+  }
+  .carousel-card-desc .desc-text {
+    font-size: 0.62rem;
+    line-height: 1.2;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Dots visible near the bottom */
+  .carousel-dots {
+    bottom: 5px;
+    gap: 5px;
+  }
+  .carousel-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  /* Header stays sticky as-is (no change needed, just confirmed) */
+  .app-header {
+    position: sticky;
+    top: 0;
   }
 }
