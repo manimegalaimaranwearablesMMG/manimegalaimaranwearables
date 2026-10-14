@@ -108,13 +108,24 @@
       <div class="cart-footer">
         <div class="cart-total-row">
           <span>Subtotal</span>
+          <strong id="cartSubtotalDisplay">₹0</strong>
+        </div>
+        <div class="cart-total-row">
+          <span>Shipping</span>
+          <strong id="cartShippingDisplay">—</strong>
+        </div>
+        <div class="cart-total-row grand">
+          <span>Grand Total</span>
           <strong id="cartTotalDisplay">₹0</strong>
         </div>
 
         <div class="checkout-fields">
-          <input type="text" id="custName" placeholder="Your Full Name" required>
-          <input type="tel" id="custPhone" placeholder="Mobile / WhatsApp Number" required>
-          <textarea id="custAddress" placeholder="Full Delivery Address" rows="2" required></textarea>
+          <input type="text" id="custName" placeholder="Full Name" required>
+          <input type="tel" id="custPhone" placeholder="WhatsApp Number" required>
+          <input type="text" id="custHouse" placeholder="Flat / House No / Street" required>
+          <input type="text" id="custArea" placeholder="Area / Locality" required>
+          <input type="text" id="custDistrict" placeholder="District" required>
+          <input type="text" id="custState" placeholder="State" required>
           <input type="tel" id="custPincode" placeholder="Pincode (6 digits)" maxlength="6" pattern="[0-9]{6}">
           <label class="save-checkbox">
             <input type="checkbox" id="saveDetails"> Save details for next order
