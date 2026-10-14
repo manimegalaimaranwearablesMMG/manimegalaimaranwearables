@@ -374,6 +374,11 @@ function initCarousel() {
   // Build slides
   track.innerHTML = carouselSlides.map(p => `
     <div class="carousel-pair" data-product-id="${p.id}">
+      <div class="carousel-card-info">
+        <div class="info-brand">🔱 Mahadev</div>
+        <div class="info-tagline">Curated Jewels<br>&amp; Ethnic</div>
+        <div class="info-offer">Free shipping<br>above ₹999</div>
+      </div>
       <div class="carousel-card-img">
         <img src="${p.image}" alt="${p.title}" loading="eager">
       </div>
