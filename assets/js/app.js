@@ -7,6 +7,22 @@ const CONFIG = {
   whatsappNumber: "919876543210"      // ← CHANGE: 91 + 10-digit number
 };
 
+const FREE_SHIPPING_ABOVE = 999;
+const SHIPPING_ZONES = [
+  { from: 600001, to: 643999, fee:  60, name: "Tamil Nadu" },
+  { from: 560001, to: 591999, fee:  80, name: "Karnataka" },
+  { from: 670001, to: 695999, fee:  80, name: "Kerala" },
+  { from: 500001, to: 539999, fee:  80, name: "Andhra / Telangana" },
+  { from: 400001, to: 445999, fee:  90, name: "Maharashtra / Goa" },
+  { from: 360001, to: 396999, fee:  90, name: "Gujarat" },
+  { from: 110001, to: 122099, fee: 120, name: "Delhi NCR" }
+];
+function getShippingZone(pincode) {
+  const pin = parseInt(pincode, 10);
+  if (!pincode || isNaN(pin) || pin < 100000 || pin > 855999) return null;
+  return SHIPPING_ZONES.find(z => pin >= z.from && pin <= z.to) || { fee: 150, name: "Rest of India" };
+}
+
 /* Saved customer details — persist in localStorage */
 const SAVED_CUSTOMER_KEY = "ma_fashion_customer";
 
@@ -55,6 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSearch();
   setupFooterLinks();
   restoreSavedCustomer();
+
+  const pinEl = document.getElementById("custPincode");
+  if (pinEl) pinEl.addEventListener("input", updateShippingTotals);
 });
 
 function restoreSavedCustomer() {
@@ -280,7 +299,7 @@ function renderProducts(items) {
           </div>
         </div>
         <button class="btn-add" onclick="event.stopPropagation(); addToCart('${p.id}')">Add to Cart</button>
-        <button class="btn-wa-card" onclick="event.stopPropagation(); orderOnWhatsApp('${p.id}')">📲 Checkout on WhatsApp</button>
+        <button class="btn-wa-card" onclick="event.stopPropagation(); checkoutSingleProduct('${p.id}')">📲 Checkout on WhatsApp</button>
       </div>
     </div>
   `;
@@ -457,15 +476,14 @@ function scrollToProduct(productId) {
 /* ═══════════════════════════════════════════════════════════════ */
 /* [CART] Add / remove / update                                    */
 /* ═══════════════════════════════════════════════════════════════ */
-function orderOnWhatsApp(productId) {
+function checkoutSingleProduct(productId) {
   const p = products.find(x => x.id === productId);
   if (!p) return;
-  const msg = `🛍️ *Product Enquiry*\n` +
-              `---------------------------------\n` +
-              `• ${p.title} - ₹${p.price}\n` +
-              `---------------------------------\n` +
-              `Hi, I want to order this. Please confirm availability.`;
-  window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+  const ex = cart.find(c => c.id === productId);
+  if (ex) ex.qty += 1;
+  else cart.push({ ...p, qty: 1 });
+  updateCartUI();
+  document.getElementById("cartOverlay").classList.add("open");
 }
 
 function addToCart(productId) {
@@ -499,8 +517,33 @@ function updateCartUI() {
     `).join("");
   }
 
-  const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-  document.getElementById("cartTotalDisplay").innerText = `₹${total.toLocaleString("en-IN")}`;
+  updateShippingTotals();
+}
+
+function updateShippingTotals() {
+  const subtotalEl = document.getElementById("cartSubtotalDisplay");
+  const shippingEl = document.getElementById("cartShippingDisplay");
+  const totalEl    = document.getElementById("cartTotalDisplay");
+  const pinEl      = document.getElementById("custPincode");
+  if (!totalEl) return;
+
+  const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+  let shipping = 0, zoneName = "";
+
+  if (subtotal >= FREE_SHIPPING_ABOVE) {
+    shipping = 0; zoneName = "Free";
+  } else if (pinEl && pinEl.value.trim().length === 6) {
+    const zone = getShippingZone(pinEl.value.trim());
+    if (zone) { shipping = zone.fee; zoneName = zone.name; }
+  }
+
+  const grand = subtotal + shipping;
+  if (subtotalEl) subtotalEl.innerText = `₹${subtotal.toLocaleString("en-IN")}`;
+  if (shippingEl) shippingEl.innerText = shipping === 0
+    ? "Free"
+    : `₹${shipping.toLocaleString("en-IN")}${zoneName ? " (" + zoneName + ")" : ""}`;
+  totalEl.innerText = `₹${grand.toLocaleString("en-IN")}`;
+  return { subtotal, shipping, grand, zoneName };
 }
 
 function removeFromCart(index) {
@@ -562,13 +605,17 @@ function setupListeners() {
       saveCustomerDetails({ name, phone, address: addr, pincode: (pincode || "").trim() });
     }
 
-    const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    const totals = updateShippingTotals();
     const orderId = "AJ-" + Math.floor(1000 + Math.random() * 9000);
 
     pendingOrder = {
       orderId, name, phone,
       addr: addr + (pincode ? " - " + pincode.trim() : ""),
-      total, items: [...cart]
+      subtotal: totals.subtotal,
+      shipping: totals.shipping,
+      total: totals.grand,
+      zone: totals.zoneName,
+      items: [...cart]
     };
     openUpiModal(pendingOrder);
   };
@@ -618,17 +665,22 @@ function openUpiModal(order) {
 /* ═══════════════════════════════════════════════════════════════ */
 function triggerWhatsApp(order) {
   const itemList = order.items.map(i => `• ${i.title} (x${i.qty}) - ₹${i.price * i.qty}`).join("\n");
+  const shipLine = order.shipping === 0
+    ? `🚚 Shipping: Free`
+    : `🚚 Shipping: ₹${order.shipping}${order.zone ? " (" + order.zone + ")" : ""}`;
   const msg = `🛍️ *NEW ORDER: #${order.orderId}*\n` +
               `---------------------------------\n` +
               `${itemList}\n` +
               `---------------------------------\n` +
-              `💰 *Total Amount:* ₹${order.total}\n` +
-              `💳 *Payment Method:* UPI (${CONFIG.upiId})\n\n` +
-              `📍 *Delivery Details:*\n` +
+              `🧾 Subtotal: ₹${order.subtotal}\n` +
+              `${shipLine}\n` +
+              `💰 *Grand Total: ₹${order.total}*\n` +
+              `💳 *Payment:* UPI (${CONFIG.upiId})\n\n` +
+              `📍 *Delivery:*\n` +
               `Name: ${order.name}\n` +
               `Phone: ${order.phone}\n` +
               `Address: ${order.addr}\n\n` +
-              `✅ *I am attaching my payment screenshot below.*`;
+              `✅ *Attaching payment screenshot below.*`;
 
   window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
   document.getElementById("upiModal").classList.remove("open");
