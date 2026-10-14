@@ -277,8 +277,12 @@ function renderProducts(items) {
   }
 
   if (!items.length) { console.warn("renderProducts: empty list"); }
-  container.innerHTML = items.map(p => {
-    // Pick the first tag for the badge (prefer bestseller)
+  const totalPages = Math.ceil(items.length / PER_PAGE);
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * PER_PAGE;
+  const pageItems = items.slice(start, start + PER_PAGE);
+
+  container.innerHTML = pageItems.map(p => {
     const badge = p.tags.includes("bestseller") ? "Bestseller"
                 : p.tags.includes("most_loved") ? "Most Loved"
                 : p.tags.includes("trending")   ? "Trending"
