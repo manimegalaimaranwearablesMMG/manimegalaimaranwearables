@@ -112,6 +112,58 @@
     </div>
   </div>
 
+  <!-- CART DRAWER -->
+  <div class="cart-overlay" id="cartOverlay">
+    <aside class="cart-drawer">
+      <div class="cart-header">
+        <h3>Your Shopping Bag</h3>
+        <button class="close-btn" id="cartCloseBtn">&times;</button>
+      </div>
+      <div class="cart-body" id="cartItemsList">
+        <p class="empty-msg">Your shopping bag is empty.</p>
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total-row"><span>Subtotal</span><strong id="cartSubtotalDisplay">₹0</strong></div>
+        <div class="cart-total-row"><span>Shipping</span><strong id="cartShippingDisplay">—</strong></div>
+        <div class="cart-total-row grand"><span>Grand Total</span><strong id="cartTotalDisplay">₹0</strong></div>
+        <div class="checkout-fields">
+          <input type="text" id="custName" placeholder="Full Name" required>
+          <input type="tel" id="custPhone" placeholder="WhatsApp Number" required>
+          <input type="text" id="custHouse" placeholder="Flat / House No / Street" required>
+          <input type="text" id="custArea" placeholder="Area / Locality" required>
+          <input type="text" id="custDistrict" placeholder="District" required>
+          <input type="text" id="custState" placeholder="State" required>
+          <input type="tel" id="custPincode" placeholder="Pincode (6 digits)" maxlength="6" pattern="[0-9]{6}">
+          <label class="save-checkbox">
+            <input type="checkbox" id="saveDetails"> Save details for next order
+          </label>
+        </div>
+        <button class="btn-checkout" id="checkoutBtn">Proceed to Pay & WhatsApp Order</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- UPI MODAL -->
+  <div class="upi-modal-overlay" id="upiModal">
+    <div class="upi-card">
+      <div class="upi-header">
+        <h3>Complete Payment</h3>
+        <button class="close-btn" id="upiCloseBtn">&times;</button>
+      </div>
+      <p class="upi-subtitle">Scan QR or use direct UPI link</p>
+      <div class="qr-wrapper"><img id="upiQrImg" src="" alt="UPI QR"></div>
+      <div class="upi-details">
+        <div class="upi-row"><span>Total Payable:</span><strong id="upiAmountLabel">₹0</strong></div>
+        <div class="upi-row upi-id-row">
+          <span id="upiIdLabel">loading...</span>
+          <button id="copyUpiBtn">Copy ID</button>
+        </div>
+      </div>
+      <a href="#" class="btn-direct-upi" id="directUpiLink">⚡ Pay with UPI App</a>
+      <button class="btn-wa-confirm" id="proceedWhatsAppBtn">📲 Send Confirmation on WhatsApp</button>
+    </div>
+  </div>
+
   <div class="login-modal-overlay" id="loginModal">
     <div class="login-card">
       <button class="close-btn" onclick="closeLoginModal()">&times;</button>
