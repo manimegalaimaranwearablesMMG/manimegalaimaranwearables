@@ -148,15 +148,17 @@ function updateShippingTotals() {
 function restoreSavedCustomer() {
   const c = loadCustomerDetails();
   if (!c) return;
-  const n = document.getElementById("custName");
-  const p = document.getElementById("custPhone");
-  const a = document.getElementById("custAddress");
-  const pn = document.getElementById("custPincode");
+  const fields = {
+    custName: c.name, custPhone: c.phone,
+    custHouse: c.house, custArea: c.area,
+    custDistrict: c.district, custState: c.state,
+    custPincode: c.pincode
+  };
+  for (const id in fields) {
+    const el = document.getElementById(id);
+    if (el && fields[id]) el.value = fields[id];
+  }
   const sv = document.getElementById("saveDetails");
-  if (n && c.name) n.value = c.name;
-  if (p && c.phone) p.value = c.phone;
-  if (a && c.address) a.value = c.address;
-  if (pn && c.pincode) pn.value = c.pincode;
   if (sv) sv.checked = true;
 }
 
@@ -226,7 +228,8 @@ function checkoutSingleProduct(id) {
   else cart.push({ ...p, qty: 1 });
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCartUI();
-  document.getElementById("cartOverlay").classList.add("open");
+  const drawer = document.getElementById("cartOverlay");
+  if (drawer) drawer.classList.add("open");
 }
 
 function setupSidebar() {
@@ -246,6 +249,49 @@ function setupSearch() {
 }
 
 function setupCart() {
-  document.getElementById("loginBtn")?.addEventListener("click", openLoginModal);
-  document.getElementById("sidebarLogin")?.addEventListener("click", e => { e.preventDefault(); openLoginModal(); });
+  const lb = document.getElementById("loginBtn");
+  if (lb) lb.addEventListener("click", () => { if (typeof openLoginModal === "function") openLoginModal(); });
+  const sl = document.getElementById("sidebarLogin");
+  if (sl) sl.addEventListener("click", e => { e.preventDefault(); if (typeof openLoginModal === "function") openLoginModal(); });
+
+  const upiClose = document.getElementById("upiCloseBtn");
+  if (upiClose) upiClose.onclick = () => document.getElementById("upiModal").classList.remove("open");
+}
+
+function openUpiModal(order) {
+  const upiUri = `upi://pay?pa=${encodeURIComponent(CONFIG.upiId)}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${order.total}&cu=INR&tn=${encodeURIComponent("Order " + order.orderId)}&tr=${encodeURIComponent(order.orderId)}`;
+  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
+  document.getElementById("upiQrImg").src            = qrUrl;
+  document.getElementById("upiAmountLabel").innerText = `₹${order.total.toLocaleString("en-IN")}`;
+  document.getElementById("upiIdLabel").innerText     = CONFIG.upiId;
+  document.getElementById("directUpiLink").href       = upiUri;
+  document.getElementById("copyUpiBtn").onclick = () => {
+    navigator.clipboard.writeText(CONFIG.upiId);
+    alert("UPI ID copied!");
+  };
+  document.getElementById("proceedWhatsAppBtn").onclick = () => {
+    const paid = confirm("Did you complete the UPI payment?\n\nTap OK if you paid.\nTap Cancel if not.");
+    if (paid) triggerWhatsApp(order);
+  };
+  document.getElementById("cartOverlay").classList.remove("open");
+  document.getElementById("upiModal").classList.add("open");
+}
+
+function triggerWhatsApp(order) {
+  const itemList = order.items.map(i => `• ${i.title} (x${i.qty}) - ₹${i.price * i.qty}`).join("\n");
+  const shipLine = order.shipping === 0
+    ? `🚚 Shipping: Free`
+    : `🚚 Shipping: ₹${order.shipping}${order.zone ? " (" + order.zone + ")" : ""}`;
+  const msg = `🛍️ *NEW ORDER: #${order.orderId}*\n` +
+              `---------------------------------\n${itemList}\n---------------------------------\n` +
+              `🧾 Subtotal: ₹${order.subtotal}\n${shipLine}\n` +
+              `💰 *Grand Total: ₹${order.total}*\n` +
+              `💳 *Payment:* UPI (${CONFIG.upiId})\n\n` +
+              `📍 *Delivery:*\nName: ${order.name}\nPhone: ${order.phone}\nAddress: ${order.addr}\n\n` +
+              `✅ *Attaching payment screenshot below.*`;
+  window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+  document.getElementById("upiModal").classList.remove("open");
+  cart = [];
+  localStorage.setItem("cart", "[]");
+  updateCartUI();
 }
