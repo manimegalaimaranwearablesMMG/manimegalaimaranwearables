@@ -79,15 +79,17 @@ document.addEventListener("DOMContentLoaded", () => {
 function restoreSavedCustomer() {
   const c = loadCustomerDetails();
   if (!c) return;
-  const n = document.getElementById("custName");
-  const p = document.getElementById("custPhone");
-  const a = document.getElementById("custAddress");
-  const pn = document.getElementById("custPincode");
+  const fields = {
+    custName: c.name, custPhone: c.phone,
+    custHouse: c.house, custArea: c.area,
+    custDistrict: c.district, custState: c.state,
+    custPincode: c.pincode
+  };
+  for (const id in fields) {
+    const el = document.getElementById(id);
+    if (el && fields[id]) el.value = fields[id];
+  }
   const sv = document.getElementById("saveDetails");
-  if (n && c.name) n.value = c.name;
-  if (p && c.phone) p.value = c.phone;
-  if (a && c.address) a.value = c.address;
-  if (pn && c.pincode) pn.value = c.pincode;
   if (sv) sv.checked = true;
 }
 
@@ -588,29 +590,33 @@ function setupListeners() {
   document.getElementById("checkoutBtn").onclick = () => {
     if (cart.length === 0) return alert("Your bag is empty!");
 
-    const name    = document.getElementById("custName").value.trim();
-    const phone   = document.getElementById("custPhone").value.trim();
-    const addr    = document.getElementById("custAddress").value.trim();
-    const pincode = (document.getElementById("custPincode") || {}).value;
-    const save    = (document.getElementById("saveDetails") || {}).checked;
+    const name     = document.getElementById("custName").value.trim();
+    const phone    = document.getElementById("custPhone").value.trim();
+    const house    = (document.getElementById("custHouse")    || {}).value || "";
+    const area     = (document.getElementById("custArea")     || {}).value || "";
+    const district = (document.getElementById("custDistrict") || {}).value || "";
+    const state    = (document.getElementById("custState")    || {}).value || "";
+    const pincode  = (document.getElementById("custPincode")  || {}).value || "";
+    const save     = (document.getElementById("saveDetails")  || {}).checked;
 
-    if (!name || !phone || !addr) {
-      return alert("Please fill in your name, phone, and address.");
+    if (!name || !phone || !house || !area || !district || !state) {
+      return alert("Please fill in all required fields.");
     }
     if (pincode && !/^\d{6}$/.test(pincode.trim())) {
       return alert("Pincode must be 6 digits.");
     }
 
     if (save) {
-      saveCustomerDetails({ name, phone, address: addr, pincode: (pincode || "").trim() });
+      saveCustomerDetails({ name, phone, house, area, district, state, pincode: pincode.trim() });
     }
 
+    const fullAddr = `${house}, ${area}, ${district}, ${state} - ${pincode}`.trim();
     const totals = updateShippingTotals();
     const orderId = "AJ-" + Math.floor(1000 + Math.random() * 9000);
 
     pendingOrder = {
       orderId, name, phone,
-      addr: addr + (pincode ? " - " + pincode.trim() : ""),
+      addr: fullAddr,
       subtotal: totals.subtotal,
       shipping: totals.shipping,
       total: totals.grand,
