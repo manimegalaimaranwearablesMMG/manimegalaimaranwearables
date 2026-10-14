@@ -179,44 +179,40 @@ function setupCartDrawer() {
   if (checkoutBtn) checkoutBtn.onclick = () => {
     if (cart.length === 0) return alert("Your bag is empty!");
 
-    const name    = document.getElementById("custName").value.trim();
-    const phone   = document.getElementById("custPhone").value.trim();
-    const addr    = document.getElementById("custAddress").value.trim();
-    const pincode = (document.getElementById("custPincode") || {}).value || "";
-    const save    = (document.getElementById("saveDetails") || {}).checked;
+    const name     = document.getElementById("custName").value.trim();
+    const phone    = document.getElementById("custPhone").value.trim();
+    const house    = (document.getElementById("custHouse")    || {}).value || "";
+    const area     = (document.getElementById("custArea")     || {}).value || "";
+    const district = (document.getElementById("custDistrict") || {}).value || "";
+    const state    = (document.getElementById("custState")    || {}).value || "";
+    const pincode  = (document.getElementById("custPincode")  || {}).value || "";
+    const save     = (document.getElementById("saveDetails")  || {}).checked;
 
-    if (!name || !phone || !addr) return alert("Please fill in your name, phone, and address.");
-    if (pincode && !/^\d{6}$/.test(pincode.trim())) return alert("Pincode must be 6 digits.");
+    if (!name || !phone || !house || !area || !district || !state) {
+      return alert("Please fill in all required fields.");
+    }
+    if (pincode && !/^\d{6}$/.test(pincode.trim())) {
+      return alert("Pincode must be 6 digits.");
+    }
 
-    if (save) saveCustomerDetails({ name, phone, address: addr, pincode: pincode.trim() });
+    const fullAddr = `${house}, ${area}, ${district}, ${state} - ${pincode}`.trim();
+
+    if (save) saveCustomerDetails({ name, phone, house, area, district, state, pincode: pincode.trim() });
 
     const totals = updateShippingTotals();
     const orderId = "AJ-" + Math.floor(1000 + Math.random() * 9000);
-    const fullAddr = addr + (pincode ? " - " + pincode.trim() : "");
 
-    const itemList = cart.map(i => `• ${i.title} (x${i.qty}) - ₹${i.price * i.qty}`).join("\n");
-    const shipLine = totals.shipping === 0
-      ? `🚚 Shipping: Free`
-      : `🚚 Shipping: ₹${totals.shipping}${totals.zoneName ? " (" + totals.zoneName + ")" : ""}`;
-    const msg = `🛍️ *NEW ORDER: #${orderId}*\n` +
-                `---------------------------------\n` +
-                `${itemList}\n` +
-                `---------------------------------\n` +
-                `🧾 Subtotal: ₹${totals.subtotal}\n` +
-                `${shipLine}\n` +
-                `💰 *Grand Total: ₹${totals.grand}*\n` +
-                `💳 *Payment Method:* UPI (${CONFIG.upiId})\n\n` +
-                `📍 *Delivery:*\nName: ${name}\nPhone: ${phone}\nAddress: ${fullAddr}\n\n` +
-                `✅ *I am attaching my payment screenshot below.*`;
+    const order = {
+      orderId, name, phone,
+      addr: fullAddr,
+      subtotal: totals.subtotal,
+      shipping: totals.shipping,
+      total: totals.grand,
+      zone: totals.zoneName,
+      items: [...cart]
+    };
 
-    const paid = confirm("Did you complete the UPI payment?\\n\\nTap OK if you paid.\\nTap Cancel if not.");
-    if (!paid) return;
-
-    window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
-    cart = [];
-    localStorage.setItem("cart", "[]");
-    updateCartUI();
-    document.getElementById("cartOverlay").classList.remove("open");
+    openUpiModal(order);
   };
 }
 
