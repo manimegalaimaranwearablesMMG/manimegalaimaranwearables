@@ -1,0 +1,236 @@
+FILE: index.html
+<<<<<<< FIND
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- [UPI MODAL] Instant UPI payment dialog                         -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="upi-modal-overlay" id="upiModal">
+    <div class="upi-card">
+      <div class="upi-header">
+        <h3>Complete Payment</h3>
+        <button class="close-btn" id="upiCloseBtn">&times;</button>
+      </div>
+
+      <p class="upi-subtitle">Scan QR with GPay / PhonePe / Paytm or pay directly</p>
+
+      <div class="qr-wrapper">
+        <img id="upiQrImg" src="" alt="UPI QR Code">
+      </div>
+
+      <div class="upi-details">
+        <div class="upi-row">
+          <span>Total Payable:</span>
+          <strong id="upiAmountLabel">₹0</strong>
+        </div>
+        <div class="upi-row upi-id-row">
+          <span id="upiIdLabel">loading...</span>
+          <button id="copyUpiBtn">Copy ID</button>
+        </div>
+      </div>
+
+      <a href="#" class="btn-direct-upi" id="directUpiLink">⚡ Pay with Installed UPI App</a>
+      <button class="btn-wa-confirm" id="proceedWhatsAppBtn">📲 Send Confirmation on WhatsApp</button>
+      <small class="safety-note">🔒 Payments route via NPCI banking networks directly to seller.</small>
+    </div>
+  </div>
+  <!-- [END UPI MODAL] -->
+
+=======
+>>>>>>>
+
+FILE: index.html
+<<<<<<< FIND
+        <button class="btn-checkout" id="checkoutBtn">Proceed to Pay & WhatsApp Order</button>
+=======
+        <button class="btn-checkout" id="checkoutBtn">📲 Send Order on WhatsApp</button>
+>>>>>>>
+
+FILE: category.html
+<<<<<<< FIND
+  <!-- UPI MODAL -->
+  <div class="upi-modal-overlay" id="upiModal">
+    <div class="upi-card">
+      <div class="upi-header">
+        <h3>Complete Payment</h3>
+        <button class="close-btn" id="upiCloseBtn">&times;</button>
+      </div>
+      <p class="upi-subtitle">Scan QR or use direct UPI link</p>
+      <div class="qr-wrapper"><img id="upiQrImg" src="" alt="UPI QR"></div>
+      <div class="upi-details">
+        <div class="upi-row"><span>Total Payable:</span><strong id="upiAmountLabel">₹0</strong></div>
+        <div class="upi-row upi-id-row">
+          <span id="upiIdLabel">loading...</span>
+          <button id="copyUpiBtn">Copy ID</button>
+        </div>
+      </div>
+      <a href="#" class="btn-direct-upi" id="directUpiLink">⚡ Pay with UPI App</a>
+      <button class="btn-wa-confirm" id="proceedWhatsAppBtn">📲 Send Confirmation on WhatsApp</button>
+    </div>
+  </div>
+=======
+>>>>>>>
+
+FILE: category.html
+<<<<<<< FIND
+        <button class="btn-checkout" id="checkoutBtn">Proceed to Pay & WhatsApp Order</button>
+=======
+        <button class="btn-checkout" id="checkoutBtn">📲 Send Order on WhatsApp</button>
+>>>>>>>
+
+FILE: product.html
+<<<<<<< FIND
+  <div class="pd-bottom-bar">
+    <button class="pd-btn-add" id="pdAddBtn">🛒 Add to Cart</button>
+    <button class="pd-btn-wa" id="pdWaBtn">📲 Checkout on WhatsApp</button>
+  </div>
+=======
+  <div class="pd-bottom-bar">
+    <button class="pd-btn-add" id="pdAddBtn">🛒 Add to Cart</button>
+    <button class="pd-btn-wa" id="pdWaBtn">📲 Send Order on WhatsApp</button>
+  </div>
+>>>>>>>
+
+FILE: assets/js/app.js
+<<<<<<< FIND
+function openUpiModal(order) {
+  const upiUri = `upi://pay?pa=${encodeURIComponent(CONFIG.upiId)}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${order.total}&cu=INR&tn=${encodeURIComponent("Order " + order.orderId)}&tr=${encodeURIComponent(order.orderId)}`;
+  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
+
+  document.getElementById("upiQrImg").src            = qrUrl;
+  document.getElementById("upiAmountLabel").innerText = `₹${order.total.toLocaleString("en-IN")}`;
+  document.getElementById("upiIdLabel").innerText     = CONFIG.upiId;
+  document.getElementById("directUpiLink").href       = upiUri;
+
+  document.getElementById("copyUpiBtn").onclick = () => {
+    navigator.clipboard.writeText(CONFIG.upiId);
+    alert("UPI ID copied!");
+  };
+
+  const waBtn = document.getElementById("proceedWhatsAppBtn");
+  waBtn.onclick = () => {
+    const paid = confirm(
+      "Did you complete the UPI payment?\\n\\n" +
+      "Tap OK if you paid.\\n" +
+      "Tap Cancel if you didn't pay yet."
+    );
+    if (paid) {
+      triggerWhatsApp(order);
+    } else {
+      return;
+    }
+  };
+
+  document.getElementById("cartOverlay").classList.remove("open");
+  document.getElementById("upiModal").classList.add("open");
+}
+=======
+>>>>>>>
+
+FILE: assets/js/app.js
+<<<<<<< FIND
+    pendingOrder = {
+      orderId, name, phone,
+      addr: fullAddr,
+      subtotal: totals.subtotal,
+      shipping: totals.shipping,
+      total: totals.grand,
+      zone: totals.zoneName,
+      items: [...cart]
+    };
+    openUpiModal(pendingOrder);
+=======
+    pendingOrder = {
+      orderId, name, phone,
+      addr: fullAddr,
+      subtotal: totals.subtotal,
+      shipping: totals.shipping,
+      total: totals.grand,
+      zone: totals.zoneName,
+      items: [...cart]
+    };
+    triggerWhatsApp(pendingOrder);
+>>>>>>>
+
+FILE: assets/js/app.js
+<<<<<<< FIND
+  document.getElementById("upiCloseBtn").onclick  = () => document.getElementById("upiModal").classList.remove("open");
+=======
+>>>>>>>
+
+FILE: assets/js/category.js
+<<<<<<< FIND
+function openUpiModal(order) {
+  const upiUri = `upi://pay?pa=${encodeURIComponent(CONFIG.upiId)}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${order.total}&cu=INR&tn=${encodeURIComponent("Order " + order.orderId)}&tr=${encodeURIComponent(order.orderId)}`;
+  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
+  document.getElementById("upiQrImg").src            = qrUrl;
+  document.getElementById("upiAmountLabel").innerText = `₹${order.total.toLocaleString("en-IN")}`;
+  document.getElementById("upiIdLabel").innerText     = CONFIG.upiId;
+  document.getElementById("directUpiLink").href       = upiUri;
+  document.getElementById("copyUpiBtn").onclick = () => {
+    navigator.clipboard.writeText(CONFIG.upiId);
+    alert("UPI ID copied!");
+  };
+  document.getElementById("proceedWhatsAppBtn").onclick = () => {
+    const paid = confirm("Did you complete the UPI payment?\n\nTap OK if you paid.\nTap Cancel if not.");
+    if (paid) triggerWhatsApp(order);
+  };
+  document.getElementById("cartOverlay").classList.remove("open");
+  document.getElementById("upiModal").classList.add("open");
+}
+=======
+>>>>>>>
+
+FILE: assets/js/category.js
+<<<<<<< FIND
+    const order = {
+      orderId, name, phone,
+      addr: fullAddr,
+      subtotal: totals.subtotal,
+      shipping: totals.shipping,
+      total: totals.grand,
+      zone: totals.zoneName,
+      items: [...cart]
+    };
+
+    openUpiModal(order);
+  };
+=======
+    const order = {
+      orderId, name, phone,
+      addr: fullAddr,
+      subtotal: totals.subtotal,
+      shipping: totals.shipping,
+      total: totals.grand,
+      zone: totals.zoneName,
+      items: [...cart]
+    };
+
+    triggerWhatsApp(order);
+  };
+>>>>>>>
+
+FILE: assets/js/category.js
+<<<<<<< FIND
+  const upiClose = document.getElementById("upiCloseBtn");
+  if (upiClose) upiClose.onclick = () => document.getElementById("upiModal").classList.remove("open");
+=======
+>>>>>>>
+
+FILE: assets/js/product.js
+<<<<<<< FIND
+  document.getElementById("pdWaBtn").onclick = () => {
+    checkoutSingleProduct(p.id);
+  };
+=======
+  document.getElementById("pdWaBtn").onclick = () => {
+    const p = currentProduct;
+    const orderId = "AJ-" + Math.floor(1000 + Math.random() * 9000);
+    const msg = `🛍️ *PRODUCT ENQUIRY*\n` +
+                `---------------------------------\n` +
+                `• ${p.title}\n` +
+                `💰 Price: ₹${p.price.toLocaleString("en-IN")}\n` +
+                `🔗 ${location.origin}/product.html?id=${p.id}\n` +
+                `---------------------------------\n` +
+                `Hi, I want to order this. Please confirm availability.`;
+    window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+  };
+>>>>>>>
