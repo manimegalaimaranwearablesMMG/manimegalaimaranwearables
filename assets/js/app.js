@@ -94,22 +94,39 @@ function restoreSavedCustomer() {
 }
 
 function setupSidebar() {
-  const sidebar  = document.getElementById("sidebar");
-  const backdrop = document.getElementById("sidebarBackdrop");
-  if (!sidebar || !backdrop) return;
-
-  const open  = () => { sidebar.classList.add("open");  backdrop.classList.add("open"); };
-  const close = () => { sidebar.classList.remove("open"); backdrop.classList.remove("open"); };
-
-  // Delegated — works no matter when the button appears in the DOM
+  // Always attach ONE delegated listener at document level.
+  // Elements are looked up at click time, so it works even if the
+  // header/sidebar render after this function runs.
   document.addEventListener("click", (e) => {
+    // ---- Hamburger toggle ----
     const ham = e.target.closest("#hamburgerBtn");
     if (ham) {
       e.preventDefault();
-      sidebar.classList.contains("open") ? close() : open();
+      e.stopPropagation();
+      const sidebar  = document.getElementById("sidebar");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      if (!sidebar || !backdrop) return;
+      const isOpen = sidebar.classList.contains("open");
+      if (isOpen) {
+        sidebar.classList.remove("open");
+        backdrop.classList.remove("open");
+      } else {
+        sidebar.classList.add("open");
+        backdrop.classList.add("open");
+      }
       return;
     }
-    if (e.target === backdrop) { close(); return; }
+
+    // ---- Backdrop click closes ----
+    const backdrop = document.getElementById("sidebarBackdrop");
+    if (backdrop && e.target === backdrop) {
+      backdrop.classList.remove("open");
+      const sidebar = document.getElementById("sidebar");
+      if (sidebar) sidebar.classList.remove("open");
+      return;
+    }
+
+    // ---- Categories drill-down toggle ----
     const catToggle = e.target.closest("#sidebarCategoriesToggle");
     if (catToggle) {
       e.preventDefault();
@@ -117,7 +134,16 @@ function setupSidebar() {
       if (subnav) subnav.classList.toggle("open");
       return;
     }
-  });
+
+    // ---- Click on a sidebar link (Home / Login etc.) closes drawer ----
+    const link = e.target.closest(".sidebar-link");
+    if (link && !link.id) {
+      const sidebar  = document.getElementById("sidebar");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      if (sidebar)  sidebar.classList.remove("open");
+      if (backdrop) backdrop.classList.remove("open");
+    }
+  }, true);   // ← capture phase — fires before other handlers can swallow it
 }
 
 function setupSearch() {
