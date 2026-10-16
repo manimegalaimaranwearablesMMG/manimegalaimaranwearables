@@ -212,7 +212,7 @@ function setupCartDrawer() {
       items: [...cart]
     };
 
-    openUpiModal(order);
+    triggerWhatsApp(order);
   };
 }
 
@@ -250,28 +250,10 @@ function setupCart() {
   const sl = document.getElementById("sidebarLogin");
   if (sl) sl.addEventListener("click", e => { e.preventDefault(); if (typeof openLoginModal === "function") openLoginModal(); });
 
-  const upiClose = document.getElementById("upiCloseBtn");
-  if (upiClose) upiClose.onclick = () => document.getElementById("upiModal").classList.remove("open");
+
 }
 
-function openUpiModal(order) {
-  const upiUri = `upi://pay?pa=${encodeURIComponent(CONFIG.upiId)}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${order.total}&cu=INR&tn=${encodeURIComponent("Order " + order.orderId)}&tr=${encodeURIComponent(order.orderId)}`;
-  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
-  document.getElementById("upiQrImg").src            = qrUrl;
-  document.getElementById("upiAmountLabel").innerText = `₹${order.total.toLocaleString("en-IN")}`;
-  document.getElementById("upiIdLabel").innerText     = CONFIG.upiId;
-  document.getElementById("directUpiLink").href       = upiUri;
-  document.getElementById("copyUpiBtn").onclick = () => {
-    navigator.clipboard.writeText(CONFIG.upiId);
-    alert("UPI ID copied!");
-  };
-  document.getElementById("proceedWhatsAppBtn").onclick = () => {
-    const paid = confirm("Did you complete the UPI payment?\n\nTap OK if you paid.\nTap Cancel if not.");
-    if (paid) triggerWhatsApp(order);
-  };
-  document.getElementById("cartOverlay").classList.remove("open");
-  document.getElementById("upiModal").classList.add("open");
-}
+
 
 function triggerWhatsApp(order) {
   const itemList = order.items.map(i => `• ${i.title} (x${i.qty}) - ₹${i.price * i.qty}`).join("\n");

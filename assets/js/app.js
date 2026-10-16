@@ -573,7 +573,7 @@ function setupListeners() {
   document.getElementById("sidebarLogin")?.addEventListener("click", (e) => { e.preventDefault(); openLoginModal(); });
   document.getElementById("cartOpenBtn").onclick  = () => document.getElementById("cartOverlay").classList.add("open");
   document.getElementById("cartCloseBtn").onclick = () => document.getElementById("cartOverlay").classList.remove("open");
-  document.getElementById("upiCloseBtn").onclick  = () => document.getElementById("upiModal").classList.remove("open");
+
 
   // Filter chips
   document.querySelectorAll(".filter-chip").forEach(btn => {
@@ -632,7 +632,7 @@ function setupListeners() {
       zone: totals.zoneName,
       items: [...cart]
     };
-    openUpiModal(pendingOrder);
+    triggerWhatsApp(pendingOrder);
   };
 }
 /* [END LISTENERS] */
@@ -641,37 +641,7 @@ function setupListeners() {
 /* ═══════════════════════════════════════════════════════════════ */
 /* [UPI] Payment modal                                             */
 /* ═══════════════════════════════════════════════════════════════ */
-function openUpiModal(order) {
-  const upiUri = `upi://pay?pa=${encodeURIComponent(CONFIG.upiId)}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${order.total}&cu=INR&tn=${encodeURIComponent("Order " + order.orderId)}&tr=${encodeURIComponent(order.orderId)}`;
-  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
 
-  document.getElementById("upiQrImg").src            = qrUrl;
-  document.getElementById("upiAmountLabel").innerText = `₹${order.total.toLocaleString("en-IN")}`;
-  document.getElementById("upiIdLabel").innerText     = CONFIG.upiId;
-  document.getElementById("directUpiLink").href       = upiUri;
-
-  document.getElementById("copyUpiBtn").onclick = () => {
-    navigator.clipboard.writeText(CONFIG.upiId);
-    alert("UPI ID copied!");
-  };
-
-  const waBtn = document.getElementById("proceedWhatsAppBtn");
-  waBtn.onclick = () => {
-    const paid = confirm(
-      "Did you complete the UPI payment?\\n\\n" +
-      "Tap OK if you paid.\\n" +
-      "Tap Cancel if you didn't pay yet."
-    );
-    if (paid) {
-      triggerWhatsApp(order);
-    } else {
-      return;
-    }
-  };
-
-  document.getElementById("cartOverlay").classList.remove("open");
-  document.getElementById("upiModal").classList.add("open");
-}
 /* [END UPI] */
 
 
