@@ -10,7 +10,7 @@ SKIP_DIRS = {".git", "__pycache__", "node_modules", ".vscode", ".idea"}
 
 # Files at root that MUST appear first (in this exact order)
 ROOT_ORDER = [
-    ".env",
+    
     ".gitignore",
     "sync.bat",
     "start.bat",

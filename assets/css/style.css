@@ -269,6 +269,30 @@ body > * { position: relative; z-index: 1; }
   background: rgba(212,175,55,0.1);
 }
 .sidebar-link span { font-size: clamp(1rem, 2vw, 1.1rem); }
+.sidebar-link .nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+.sidebar-link[data-view="home"] .nav-icon {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3z'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3z'/></svg>");
+}
+#sidebarCategoriesToggle .nav-icon {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z'/></svg>");
+}
+#sidebarLogin .nav-icon {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z'/></svg>");
+}
 
 .sidebar-subnav {
   display: none;
@@ -1162,10 +1186,14 @@ body > * { position: relative; z-index: 1; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(0.95rem, 2vw, 1.2rem);
   text-decoration: none;
   color: var(--primary);
   transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+.social-icon svg {
+  width: 55%;
+  height: 55%;
+  display: block;
 }
 .social-icon:hover {
   transform: translateY(-3px);

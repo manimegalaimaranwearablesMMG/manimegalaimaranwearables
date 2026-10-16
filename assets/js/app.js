@@ -188,6 +188,7 @@ function renderCategoryCards() {
   const grid = document.getElementById("categoryGrid");
   if (!grid) return;
   const cats = [...new Set(products.map(p => p.category))].sort();
+  renderSidebarSubnav(cats);
   grid.innerHTML = cats.map(cat => {
     const first = products.find(p => p.category === cat);
     const thumb = first ? ((first.images && first.images[0]) || first.image) : "";
@@ -199,6 +200,21 @@ function renderCategoryCards() {
         ${imgTag}
         <div class="category-card-name">${cat}</div>
       </a>`;
+  }).join("");
+}
+
+function renderSidebarSubnav(cats) {
+  const subnav = document.getElementById("sidebarSubnav");
+  if (!subnav) return;
+  if (!cats.length) {
+    subnav.innerHTML = `<span class="sidebar-sublink">No categories yet</span>`;
+    return;
+  }
+  subnav.innerHTML = cats.map(cat => {
+    const count = products.filter(p => p.category === cat).length;
+    return `<a class="sidebar-sublink" href="category.html?cat=${encodeURIComponent(cat)}">
+      ${cat} <span style="opacity:0.6;">(${count})</span>
+    </a>`;
   }).join("");
 }
 /* [END FETCH] */
