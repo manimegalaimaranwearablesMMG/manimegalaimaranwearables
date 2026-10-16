@@ -94,27 +94,30 @@ function restoreSavedCustomer() {
 }
 
 function setupSidebar() {
-  const sidebar   = document.getElementById("sidebar");
-  const backdrop  = document.getElementById("sidebarBackdrop");
-  const hamburger = document.getElementById("hamburgerBtn");
-  const catToggle = document.getElementById("sidebarCategoriesToggle");
-  const subnav    = document.getElementById("sidebarSubnav");
-  if (!sidebar || !hamburger) return;
-
-  if (catToggle && subnav) {
-    catToggle.addEventListener("click", (e) => {
-      e.preventDefault();
-      subnav.classList.toggle("open");
-    });
-  }
+  const sidebar  = document.getElementById("sidebar");
+  const backdrop = document.getElementById("sidebarBackdrop");
+  if (!sidebar || !backdrop) return;
 
   const open  = () => { sidebar.classList.add("open");  backdrop.classList.add("open"); };
   const close = () => { sidebar.classList.remove("open"); backdrop.classList.remove("open"); };
 
-  hamburger.addEventListener("click", () => {
-    sidebar.classList.contains("open") ? close() : open();
+  // Delegated — works no matter when the button appears in the DOM
+  document.addEventListener("click", (e) => {
+    const ham = e.target.closest("#hamburgerBtn");
+    if (ham) {
+      e.preventDefault();
+      sidebar.classList.contains("open") ? close() : open();
+      return;
+    }
+    if (e.target === backdrop) { close(); return; }
+    const catToggle = e.target.closest("#sidebarCategoriesToggle");
+    if (catToggle) {
+      e.preventDefault();
+      const subnav = document.getElementById("sidebarSubnav");
+      if (subnav) subnav.classList.toggle("open");
+      return;
+    }
   });
-  backdrop.addEventListener("click", close);
 }
 
 function setupSearch() {
@@ -378,23 +381,37 @@ function buildCarouselOrder() {
 function initCarousel() {
   const track = document.getElementById("carouselTrack");
   const dots  = document.getElementById("carouselDots");
+  const col1  = document.getElementById("heroColImg1");
+  const col2  = document.getElementById("heroColImg2");
   if (!track || !dots) return;
 
   carouselSlides = buildCarouselOrder();
 
   if (carouselSlides.length === 0) {
     track.innerHTML = `<div class="carousel-loading">No products yet</div>`;
+    if (col1) col1.innerHTML = `<div class="hero-col-placeholder">—</div>`;
+    if (col2) col2.innerHTML = `<div class="hero-col-placeholder">—</div>`;
     return;
   }
 
-  // Build slides
+  // STATIC columns 1 & 2 — first product's image (or its 2nd image)
+  const featured = carouselSlides[0];
+  const imgs = (featured.images && featured.images.length) ? featured.images : [featured.image];
+  if (col1) {
+    col1.innerHTML = `<img src="${imgs[0]}" alt="${featured.title}">`;
+    col1.style.cursor = "pointer";
+    col1.onclick = () => scrollToProduct(featured.id);
+  }
+  if (col2) {
+    const second = imgs[1] || imgs[0];
+    col2.innerHTML = `<img src="${second}" alt="${featured.title}">`;
+    col2.style.cursor = "pointer";
+    col2.onclick = () => scrollToProduct(featured.id);
+  }
+
+  // COLUMN 3 — scrolling track
   track.innerHTML = carouselSlides.map(p => `
     <div class="carousel-pair" data-product-id="${p.id}">
-      <div class="carousel-card-info">
-        <div class="info-brand">🔱 Mahadev</div>
-        <div class="info-tagline">Curated Jewels<br>&amp; Ethnic</div>
-        <div class="info-offer">Free shipping<br>above ₹999</div>
-      </div>
       <div class="carousel-card-img">
         <img src="${p.image}" alt="${p.title}" loading="eager">
       </div>
@@ -406,7 +423,6 @@ function initCarousel() {
     </div>
   `).join("");
 
-  // Build dots
   dots.innerHTML = carouselSlides.map((_, i) =>
     `<button class="carousel-dot${i === 0 ? " active" : ""}" data-slide="${i}" aria-label="Slide ${i+1}"></button>`
   ).join("");
@@ -414,15 +430,12 @@ function initCarousel() {
   carouselIndex = 0;
   updateCarouselPosition();
 
-  // Slide click → scroll to product card
   track.querySelectorAll(".carousel-pair").forEach(slide => {
     slide.addEventListener("click", () => {
-      const id = slide.dataset.productId;
-      scrollToProduct(id);
+      scrollToProduct(slide.dataset.productId);
     });
   });
 
-  // Dot click → jump to slide
   dots.querySelectorAll(".carousel-dot").forEach(dot => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -432,12 +445,13 @@ function initCarousel() {
     });
   });
 
-  // Pause on hover / touch
   const carousel = document.getElementById("heroCarousel");
-  carousel.addEventListener("mouseenter", stopCarouselTimer);
-  carousel.addEventListener("mouseleave", startCarouselTimer);
-  carousel.addEventListener("touchstart", stopCarouselTimer, { passive: true });
-  carousel.addEventListener("touchend",   startCarouselTimer, { passive: true });
+  if (carousel) {
+    carousel.addEventListener("mouseenter", stopCarouselTimer);
+    carousel.addEventListener("mouseleave", startCarouselTimer);
+    carousel.addEventListener("touchstart", stopCarouselTimer, { passive: true });
+    carousel.addEventListener("touchend",   startCarouselTimer, { passive: true });
+  }
 
   startCarouselTimer();
 }
