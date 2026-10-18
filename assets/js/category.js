@@ -31,6 +31,17 @@ let products = [];
 let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 let activeCat = "all";
 let searchQuery = "";
+let activeSubCat = "all";
+
+const DEFAULT_SUBCATS = {
+  "Necklaces": ["Choker", "Long", "Pendant", "Set"],
+  "Earrings": ["Jhumka", "Studs", "Drops", "Hoops"],
+  "Bangles": ["Kada", "Set", "Bracelet"],
+  "Rings": ["Adjustable", "Statement"],
+  "Sarees": ["Silk", "Cotton", "Designer"],
+  "Ornaments": ["Maang Tikka", "Hair Pin"],
+  "Accessories": ["Bags", "Clutches", "Belts"]
+};
 
 document.addEventListener("DOMContentLoaded", async () => {
   activeCat = new URLSearchParams(location.search).get("cat") || "all";
@@ -42,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (e) { console.error(e); return; }
 
   renderProducts();
+  renderSubcategories();
   setupSidebar();
   setupSearch();
   setupCart();
@@ -50,6 +62,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateCartUI();
 });
 
+function renderSubcategories() {
+  const bar = document.getElementById("subcategoryBar");
+  if (!bar) return;
+  if (activeCat === "all") { bar.innerHTML = ""; return; }
+  
+  const subs = DEFAULT_SUBCATS[activeCat] || ["General"];
+  bar.innerHTML = `<button class="sub-btn ${activeSubCat === 'all' ? 'active' : ''}" onclick="setSubCat('all')">All</button>` + 
+    subs.map(s => `<button class="sub-btn ${activeSubCat === s ? 'active' : ''}" onclick="setSubCat('${s}')">${s}</button>`).join("");
+}
+
+function setSubCat(sub) {
+  activeSubCat = sub;
+  renderSubcategories();
+  renderProducts();
+}
+
 function renderProducts() {
   let list = products;
   if (activeCat !== "all") list = list.filter(p => p.category === activeCat);
@@ -57,6 +85,9 @@ function renderProducts() {
     const q = searchQuery.toLowerCase();
     list = list.filter(p => p.title.toLowerCase().includes(q) || (p.description||"").toLowerCase().includes(q));
   }
+  
+  // Alphabetical sort
+  list.sort((a, b) => a.title.localeCompare(b.title));
   const c = document.getElementById("productsContainer");
   if (!list.length) { c.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px 0;">No products.</p>`; return; }
   c.innerHTML = list.map(p => {
@@ -71,13 +102,13 @@ function renderProducts() {
         <div class="product-info">
           <div>
             <h4>${p.title}</h4>
+            <div class="category-label">${p.category}</div>
             <div class="price-row">
               <span class="current-price">₹${p.price.toLocaleString("en-IN")}</span>
               <span class="mrp-price">₹${(p.originalPrice||p.price).toLocaleString("en-IN")}</span>
             </div>
           </div>
-          <button class="btn-add" onclick="addToCart('${p.id}')">Add to Cart</button>
-          <button class="btn-wa-card" onclick="checkoutSingleProduct('${p.id}')">📲 Checkout on WhatsApp</button>
+          <button class="btn-wa-card" onclick="checkoutSingleProduct('${p.id}')">Send Order on WhatsApp</button>
         </div>
       </div>`;
   }).join("");

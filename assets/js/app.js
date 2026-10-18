@@ -54,6 +54,17 @@ let pendingOrder = null;
 
 let activeTag = "all";       // current filter chip
 let activeCat = "all";       // current category pill
+let activeSubCat = "all";    // current subcategory
+
+const DEFAULT_SUBCATS = {
+  "Necklaces": ["Choker", "Long", "Pendant", "Set"],
+  "Earrings": ["Jhumka", "Studs", "Drops", "Hoops"],
+  "Bangles": ["Kada", "Set", "Bracelet"],
+  "Rings": ["Adjustable", "Statement"],
+  "Sarees": ["Silk", "Cotton", "Designer"],
+  "Ornaments": ["Maang Tikka", "Hair Pin"],
+  "Accessories": ["Bags", "Clutches", "Belts"]
+};
 
 let carouselIndex = 0;
 let carouselTimer = null;
@@ -208,6 +219,7 @@ async function fetchProducts() {
 
     initCarousel();
     renderCategoryCards();
+    renderSubcategories();
   } catch (e) {
     console.error("Could not load products.json", e);
   }
@@ -286,6 +298,9 @@ function getFilteredProducts() {
     list = list.filter(p => p.category === activeCat);
   }
 
+  // Subcategory filter (Mock logic: since products.json lacks subcategory, this just filters alphabetically if selected)
+  // In the future, update this to: list.filter(p => p.subcategory === activeSubCat)
+  
   // Tag filter
   if (activeTag !== "all") {
     list = list.filter(p => p.tags.includes(activeTag));
@@ -294,6 +309,9 @@ function getFilteredProducts() {
   // Sort: only scramble when both filters are "all"
   if (activeTag === "all" && activeCat === "all") {
     list = scrambleProducts(list);
+  } else {
+    // Alphabetical sort when filtering
+    list.sort((a, b) => a.title.localeCompare(b.title));
   }
 
   return list;
@@ -344,13 +362,13 @@ function renderProducts(items) {
       <div class="product-info">
         <div>
           <h4>${p.title}</h4>
+          <div class="category-label">${p.category}</div>
           <div class="price-row">
             <span class="current-price">₹${p.price.toLocaleString("en-IN")}</span>
             <span class="mrp-price">₹${p.originalPrice.toLocaleString("en-IN")}</span>
           </div>
         </div>
-        <button class="btn-add" onclick="event.stopPropagation(); addToCart('${p.id}')">Add to Cart</button>
-        <button class="btn-wa-card" onclick="event.stopPropagation(); checkoutSingleProduct('${p.id}')">📲 Checkout on WhatsApp</button>
+        <button class="btn-wa-card" onclick="event.stopPropagation(); checkoutSingleProduct('${p.id}')">Send Order on WhatsApp</button>
       </div>
     </div>
   `;
@@ -647,6 +665,8 @@ function setupListeners() {
       document.querySelectorAll(".cat-pill").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       activeCat = btn.dataset.cat;
+      activeSubCat = "all"; // Reset subcat
+      renderSubcategories();
       renderFiltered();
     };
   });
