@@ -16,14 +16,17 @@
   </header>
 
   <main class="pd-container">
+    <div style="padding: 12px 16px 0 16px;">
+      <button class="pd-back" onclick="location.href='index.html'">← Back</button>
+    </div>
+
     <section class="pd-gallery-wrap">
       <div class="pd-gallery" id="pdGallery"></div>
       <div class="pd-thumbs" id="pdThumbs"></div>
     </section>
 
-    <section class="pd-info" style="position: relative;">
-      <button class="pd-back" onclick="location.href='index.html'" style="position: absolute; top: 16px; left: 16px; z-index: 10;">← Back</button>
-      <h2 id="pdTitle" style="padding-left: 70px;">—</h2>
+    <section class="pd-info">
+      <h2 id="pdTitle">—</h2>
       <div class="pd-price-row">
         <span class="pd-price" id="pdPrice">₹0</span>
         <span class="pd-mrp" id="pdMrp">₹0</span>
