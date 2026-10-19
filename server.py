@@ -65,6 +65,21 @@ def gh_get_sha():
         raise
 
 
+def gh_get_sha_file(filename):
+    """Get current SHA for any file from GitHub."""
+    url = f"https://api.github.com/repos/{GH_USER}/{GH_REPO}/contents/{filename}?ref={GH_BRANCH}"
+    req = Request(url, headers={
+        "Authorization": f"Bearer {GH_TOKEN}",
+        "Accept": "application/vnd.github+json"
+    })
+    try:
+        with urlopen(req) as r:
+            return json.loads(r.read())["sha"]
+    except HTTPError as e:
+        if e.code == 404:
+            return None
+        raise
+
 def gh_push(content_str, commit_msg):
     """Push products.json to GitHub via API."""
     sha = gh_get_sha()
@@ -201,6 +216,52 @@ class Handler(SimpleHTTPRequestHandler):
                 self._json(500, {"ok": False, "error": str(e)})
             return
                 
+        # ── Save categories → local + GitHub (auto) ──
+        if self.path == "/save-categories":
+            length = int(self.headers.get("Content-Length", 0))
+            raw = self.rfile.read(length).decode("utf-8")
+
+            try:
+                data = json.loads(raw)
+            except Exception:
+                self._json(400, {"ok": False, "error": "Invalid JSON"})
+                return
+
+            # 1. Write locally
+            with open("categories.json", "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
+            # 2. Push to GitHub
+            try:
+                pretty = json.dumps(data, indent=2, ensure_ascii=False)
+                # You need to update gh_push to accept a filename, or just copy the logic here
+                sha = gh_get_sha_file("categories.json")
+                content_b64 = base64.b64encode(pretty.encode("utf-8")).decode("ascii")
+                body = {
+                    "message": "Update categories",
+                    "content": content_b64,
+                    "branch": GH_BRANCH
+                }
+                if sha:
+                    body["sha"] = sha
+
+                url = f"https://api.github.com/repos/{GH_USER}/{GH_REPO}/contents/categories.json"
+                req = Request(url, method="PUT", data=json.dumps(body).encode("utf-8"), headers={
+                    "Authorization": f"Bearer {GH_TOKEN}",
+                    "Accept": "application/vnd.github+json",
+                    "Content-Type": "application/json"
+                })
+                with urlopen(req) as r:
+                    result = json.loads(r.read())
+                
+                self._json(200, {
+                    "ok": True,
+                    "commit": result.get("commit", {}).get("sha", "")[:7]
+                })
+            except Exception as e:
+                self._json(500, {"ok": False, "error": str(e)})
+            return
+
         # ── Save catalog → local + GitHub (auto) ──
         if self.path == "/save":
             length = int(self.headers.get("Content-Length", 0))

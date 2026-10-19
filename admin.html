@@ -266,6 +266,34 @@
     </div>
     <!-- [END CATALOG LIST] -->
 
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- [CATEGORY MANAGER] Add Categories & Subcategories            -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="card">
+      <h2>🗂️ Category Manager</h2>
+      <p class="sub">Add new categories or subcategories for your store</p>
+
+      <div class="row">
+        <div>
+          <label>New Category</label>
+          <input type="text" id="newCatName" placeholder="e.g. Anklets">
+        </div>
+        <div>
+          <label>New Subcategory</label>
+          <input type="text" id="newSubCatName" placeholder="e.g. Payal">
+        </div>
+      </div>
+      <button class="btn btn-success" onclick="addCategory()">+ Add to Store</button>
+      
+      <div style="margin-top: 16px;">
+        <label>Current Categories & Subcategories</label>
+        <div id="categoryListDisplay" style="font-size: 0.85rem; color: var(--muted); line-height: 1.6;">
+          Loading...
+        </div>
+      </div>
+    </div>
+    <!-- [END CATEGORY MANAGER] -->
+
   </div>
 
   <script>
@@ -275,6 +303,7 @@
     let productsList = [];
     let currentImageFiles = [];   // array of File objects (max 5)
     let existingImageUrls = [];   // URLs kept when editing (no new upload)
+    let storeCategories = {};     // { "Necklaces": ["Choker", "Long"] }
     /* [END STATE] */
 
     /* ═══════════════════════════════════════════════════════════ */
@@ -284,6 +313,7 @@
       fetchCatalog();
       checkBackendHealth();
       setupTagCheckboxes();
+      fetchCategories();
     });
     /* [END INIT] */
 
@@ -336,6 +366,114 @@
       }
     }
     /* [END HEALTH] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [CATEGORIES] Manage Categories & Subcategories               */
+    /* ═══════════════════════════════════════════════════════════ */
+    async function fetchCategories() {
+      try {
+        const res = await fetch(`categories.json?_t=${Date.now()}`);
+        if (res.ok) {
+          storeCategories = await res.json();
+        } else {
+          // Fallback if categories.json doesn't exist yet
+          storeCategories = {
+            "Necklaces": ["Choker", "Long", "Pendant", "Set"],
+            "Earrings": ["Jhumka", "Studs", "Drops", "Hoops"],
+            "Bangles": ["Kada", "Set", "Bracelet"],
+            "Rings": ["Adjustable", "Statement"],
+            "Sarees": ["Silk", "Cotton", "Designer"],
+            "Ornaments": ["Maang Tikka", "Hair Pin"],
+            "Accessories": ["Bags", "Clutches", "Belts"]
+          };
+        }
+        renderCategories();
+        updateCategoryDropdown();
+      } catch (e) {
+        console.error("Could not load categories.json", e);
+      }
+    }
+
+    function renderCategories() {
+      const display = document.getElementById("categoryListDisplay");
+      if (!display) return;
+      
+      const html = Object.keys(storeCategories).map(cat => {
+        const subs = storeCategories[cat].join(", ");
+        return `<strong>${cat}</strong>: ${subs || "No subcategories"}`;
+      }).join("<br>");
+      
+      display.innerHTML = html || "No categories yet.";
+    }
+
+    function updateCategoryDropdown() {
+      const select = document.getElementById("pCat");
+      if (!select) return;
+      
+      const currentVal = select.value;
+      select.innerHTML = Object.keys(storeCategories).map(cat => 
+        `<option value="${cat}">${cat}</option>`
+      ).join("");
+      
+      if (currentVal && storeCategories[currentVal]) select.value = currentVal;
+    }
+
+    async function addCategory() {
+      const catInput = document.getElementById("newCatName").value.trim();
+      const subInput = document.getElementById("newSubCatName").value.trim();
+
+      if (!catInput && !subInput) return alert("Enter a category or subcategory name.");
+
+      if (catInput) {
+        if (!storeCategories[catInput]) storeCategories[catInput] = [];
+      }
+
+      if (subInput) {
+        const targetCat = catInput || document.getElementById("pCat").value;
+        if (!storeCategories[targetCat]) storeCategories[targetCat] = [];
+        if (!storeCategories[targetCat].includes(subInput)) {
+          storeCategories[targetCat].push(subInput);
+        }
+      }
+
+      document.getElementById("newCatName").value = "";
+      document.getElementById("newSubCatName").value = "";
+
+      renderCategories();
+      updateCategoryDropdown();
+      
+      await saveCategoriesToGitHub();
+    }
+
+    async function saveCategoriesToGitHub() {
+      const btn = document.querySelector('button[onclick="addCategory()"]');
+      const original = btn.innerText;
+      btn.innerText = "⏳ Saving...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("http://localhost:5000/save-categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(storeCategories)
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          btn.innerText = "✅ Saved!";
+          setTimeout(() => { btn.innerText = original; btn.disabled = false; }, 1500);
+        } else {
+          alert("❌ Failed to save: " + data.error);
+          btn.innerText = original;
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert("❌ Backend not running.");
+        btn.innerText = original;
+        btn.disabled = false;
+      }
+    }
+    /* [END CATEGORIES] */
 
     /* ═══════════════════════════════════════════════════════════ */
     /* [FETCH] Load products.json                                   */
