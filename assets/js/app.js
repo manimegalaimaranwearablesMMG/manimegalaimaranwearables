@@ -55,16 +55,7 @@ let pendingOrder = null;
 let activeTag = "all";       // current filter chip
 let activeCat = "all";       // current category pill
 let activeSubCat = "all";    // current subcategory
-
-const DEFAULT_SUBCATS = {
-  "Necklaces": ["Choker", "Long", "Pendant", "Set"],
-  "Earrings": ["Jhumka", "Studs", "Drops", "Hoops"],
-  "Bangles": ["Kada", "Set", "Bracelet"],
-  "Rings": ["Adjustable", "Statement"],
-  "Sarees": ["Silk", "Cotton", "Designer"],
-  "Ornaments": ["Maang Tikka", "Hair Pin"],
-  "Accessories": ["Bags", "Clutches", "Belts"]
-};
+let storeCategories = {};    // Fetched from categories.json
 
 let carouselIndex = 0;
 let carouselTimer = null;
@@ -208,6 +199,12 @@ async function fetchProducts() {
   try {
     const res = await fetch(`products.json?_t=${Date.now()}`);
     products = await res.json();
+    
+    // Fetch categories
+    try {
+      const catRes = await fetch(`categories.json?_t=${Date.now()}`);
+      storeCategories = await catRes.json();
+    } catch(e) { console.warn("No categories.json found, using fallback."); }
 
     // Backwards compatibility: if a product has old single "tag"
     // but no "tags" array, convert it.

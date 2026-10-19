@@ -1,0 +1,9 @@
+{
+  "Necklaces": ["Choker", "Long", "Pendant", "Set"],
+  "Earrings": ["Jhumka", "Studs", "Drops", "Hoops"],
+  "Bangles": ["Kada", "Set", "Bracelet"],
+  "Rings": ["Adjustable", "Statement"],
+  "Sarees": ["Silk", "Cotton", "Designer"],
+  "Ornaments": ["Maang Tikka", "Hair Pin"],
+  "Accessories": ["Bags", "Clutches", "Belts"]
+}

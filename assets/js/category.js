@@ -32,16 +32,7 @@ let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 let activeCat = "all";
 let searchQuery = "";
 let activeSubCat = "all";
-
-const DEFAULT_SUBCATS = {
-  "Necklaces": ["Choker", "Long", "Pendant", "Set"],
-  "Earrings": ["Jhumka", "Studs", "Drops", "Hoops"],
-  "Bangles": ["Kada", "Set", "Bracelet"],
-  "Rings": ["Adjustable", "Statement"],
-  "Sarees": ["Silk", "Cotton", "Designer"],
-  "Ornaments": ["Maang Tikka", "Hair Pin"],
-  "Accessories": ["Bags", "Clutches", "Belts"]
-};
+let storeCategories = {};
 
 document.addEventListener("DOMContentLoaded", async () => {
   activeCat = new URLSearchParams(location.search).get("cat") || "all";
@@ -50,6 +41,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     const res = await fetch(`products.json?_t=${Date.now()}`);
     products = await res.json();
+    
+    const catRes = await fetch(`categories.json?_t=${Date.now()}`);
+    if (catRes.ok) storeCategories = await catRes.json();
   } catch (e) { console.error(e); return; }
 
   renderProducts();
@@ -67,7 +61,7 @@ function renderSubcategories() {
   if (!bar) return;
   if (activeCat === "all") { bar.innerHTML = ""; return; }
   
-  const subs = DEFAULT_SUBCATS[activeCat] || ["General"];
+  const subs = storeCategories[activeCat] || ["General"];
   bar.innerHTML = `<button class="sub-btn ${activeSubCat === 'all' ? 'active' : ''}" onclick="setSubCat('all')">All</button>` + 
     subs.map(s => `<button class="sub-btn ${activeSubCat === s ? 'active' : ''}" onclick="setSubCat('${s}')">${s}</button>`).join("");
 }
