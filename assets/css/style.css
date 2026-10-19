@@ -73,12 +73,14 @@ body {
 body > * { position: relative; z-index: 1; }
 
 
-/* ─── HEADER ─── */
+/* ─── HEADER (FIXED) ─── */
 .app-header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 110;                 /* above search bar so brand never covered */
-  background: rgba(11,42,29,0.7);
+  left: 0;
+  right: 0;
+  z-index: 110;
+  background: rgba(11,42,29,0.95);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--border-gold-soft);
@@ -88,6 +90,11 @@ body > * { position: relative; z-index: 1; }
   align-items: center;
   gap: clamp(6px, 1.5vw, 12px);
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* Offset body so content isn't hidden under fixed header */
+body {
+  padding-top: 65px;
 }
 
 .brand {
@@ -332,9 +339,11 @@ body > * { position: relative; z-index: 1; }
 /* Sits BELOW the sticky header. Uses max-height for a smooth
    reveal so it never overlaps the brand title. */
 .search-bar {
-  position: sticky;
-  top: 0;
-  z-index: 90;
+  position: fixed;
+  top: 65px; /* Sits exactly under the fixed header */
+  left: 0;
+  right: 0;
+  z-index: 105;
   background: rgba(10,26,18,0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

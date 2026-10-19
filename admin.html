@@ -197,6 +197,10 @@
           </select>
         </div>
         <div>
+          <label>Subcategory</label>
+          <input type="text" id="pSubCat" placeholder="e.g. Choker, Jhumka">
+        </div>
+        <div>
           <label>Free-text Badge (optional)</label>
           <input type="text" id="pTag" placeholder="e.g. Limited Edition">
         </div>
@@ -462,6 +466,7 @@
       const price = Number(document.getElementById("pPrice").value);
       const mrp   = Number(document.getElementById("pMrp").value) || price;
       const category = document.getElementById("pCat").value;
+      const subcategory = document.getElementById("pSubCat").value.trim();
       const freeTag  = document.getElementById("pTag").value.trim();
       const desc  = document.getElementById("pDesc").value.trim();
       const editId = document.getElementById("editProductId").value;
@@ -517,6 +522,7 @@
         price,
         originalPrice: mrp,
         category,
+        subcategory,
         tag: freeTag,
         tags: selectedTags,
         description: desc,
@@ -552,6 +558,7 @@
       document.getElementById("pPrice").value = p.price;
       document.getElementById("pMrp").value   = p.originalPrice;
       document.getElementById("pCat").value   = p.category;
+      document.getElementById("pSubCat").value = p.subcategory || "";
       document.getElementById("pTag").value   = p.tag || "";
       document.getElementById("pDesc").value  = p.description;
 
@@ -574,6 +581,7 @@
       document.getElementById("pPrice").value = "";
       document.getElementById("pMrp").value   = "";
       document.getElementById("pTag").value   = "";
+      document.getElementById("pSubCat").value = "";
       document.getElementById("pDesc").value  = "";
       document.getElementById("imageInput").value = "";
       document.getElementById("saveBtn").innerText = "Publish & Update Store";

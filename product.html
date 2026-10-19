@@ -10,7 +10,7 @@
 </head>
 <body>
   <header class="pd-header">
-    <button class="pd-back" onclick="location.href='index.html'">←</button>
+    <!-- Back button moved to the sticky bottom bar or header -->
     <h1 id="pdHeaderTitle">Product</h1>
     <button class="cart-trigger" id="cartOpenBtn">🛒 <span class="cart-counter" id="cartCount">0</span></button>
   </header>
@@ -21,8 +21,9 @@
       <div class="pd-thumbs" id="pdThumbs"></div>
     </section>
 
-    <section class="pd-info">
-      <h2 id="pdTitle">—</h2>
+    <section class="pd-info" style="position: relative;">
+      <button class="pd-back" onclick="location.href='index.html'" style="position: absolute; top: 16px; left: 16px; z-index: 10;">← Back</button>
+      <h2 id="pdTitle" style="padding-left: 70px;">—</h2>
       <div class="pd-price-row">
         <span class="pd-price" id="pdPrice">₹0</span>
         <span class="pd-mrp" id="pdMrp">₹0</span>

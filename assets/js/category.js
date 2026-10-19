@@ -108,6 +108,7 @@ function renderProducts() {
               <span class="mrp-price">₹${(p.originalPrice||p.price).toLocaleString("en-IN")}</span>
             </div>
           </div>
+          <button class="btn-add" onclick="addToCart('${p.id}')">Add to Cart</button>
           <button class="btn-wa-card" onclick="checkoutSingleProduct('${p.id}')">Send Order on WhatsApp</button>
         </div>
       </div>`;
