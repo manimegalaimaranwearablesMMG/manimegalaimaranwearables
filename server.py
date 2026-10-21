@@ -312,7 +312,7 @@ class Handler(SimpleHTTPRequestHandler):
 # ─────────────────────────────────────────────
 def main():
     print("=" * 60)
-    print("🔱 MAHADEV FASHION HUB — BACKEND SERVER")
+    print("✨ MANIMEGALAI MARAN WEARABLES — BACKEND SERVER")
     print("=" * 60)
     if not GH_TOKEN:
         print("⚠️  No GITHUB_TOKEN in .env — push will fail.")

@@ -1,5 +1,5 @@
 @echo off
-title Mahadev Fashion Hub — Server
+title Manimegalai Maran Wearables — Server
 echo Starting backend server...
 echo.
 echo   Admin:  http://localhost:5000/admin.html

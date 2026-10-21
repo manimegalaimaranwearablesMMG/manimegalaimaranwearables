@@ -210,7 +210,7 @@ def git_push(commit_msg="Update store via auto-patch"):
 # ─────────────────────────────────────────────────────
 def menu():
     print("=" * 55)
-    print("🛠️   MAHADEV FASHION HUB — BACKEND SYNC")
+    print("🛠️   MANIMEGALAI MARAN WEARABLES — BACKEND SYNC")
     print("=" * 55)
     print("  1.  Update files  +  Push to Git")
     print("  2.  Update files only  (no push)")

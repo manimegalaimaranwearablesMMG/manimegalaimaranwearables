@@ -1,4 +1,4 @@
-const CONFIG = { storeName: "MAHADEV FASHION HUB", upiId: "yourname@okhdfcbank", whatsappNumber: "919876543210" };
+const CONFIG = { storeName: "MANIMEGALAI MARAN WEARABLES", upiId: "yourname@okhdfcbank", whatsappNumber: "919876543210" };
 
 const SAVED_CUSTOMER_KEY = "ma_fashion_customer";
 const FREE_SHIPPING_ABOVE = 999;

@@ -58,9 +58,9 @@ SEP = "=" * 72
 def main():
     with open(OUT, "w", encoding="utf-8") as out:
         out.write(SEP + "\n")
-        out.write("MAHADEV FASHION HUB - MASTER BACKUP\n")
+        out.write("MANIMEGALAI MARAN WEARABLES - MASTER BACKUP\n")
         out.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        out.write("Repo: https://github.com/Madhan-codar/MA-FASHION\n")
+        out.write("Repo: https://github.com/manimegalaimaranwearablesMMG/manimegalaimaranwearables\n")
         out.write(SEP + "\n\n")
 
         for fname in FILES:
