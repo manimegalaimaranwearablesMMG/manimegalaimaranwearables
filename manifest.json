@@ -1,0 +1,15 @@
+{
+  "name": "MAHADEV FASHION HUB",
+  "short_name": "MahadevStudio",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#d97706",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=192&q=80",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

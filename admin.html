@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mahadev Fashion Hub - Seller Admin</title>
+  <style>
+    :root {
+      --primary: #92400e;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #d97706;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 16px; display: flex; justify-content: center; }
+    .admin-container { width: 100%; max-width: 640px; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+    h2 { font-size: 1.25rem; color: var(--primary); margin-bottom: 4px; }
+    p.sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; margin-bottom: 12px; }
+    .row { display: flex; gap: 10px; }
+    .row > div { flex: 1; }
+
+    /* Image Preview */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+      min-height: 80px;
+      padding: 10px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      background: #fafaf9;
+      margin-bottom: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-grid > span {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .preview-item {
+      position: relative;
+      aspect-ratio: 1/1;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .preview-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(220,38,38,0.9);
+      color: #fff;
+      border: none;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [TAG CHECKBOXES] Multi-select tag picker                    */
+    /* ═══════════════════════════════════════════════════════════ */
+    .tag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tag-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 500;
+      background: #fff;
+      transition: background 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .tag-option:hover { border-color: var(--accent); }
+    .tag-option input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      padding: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .tag-option.checked {
+      background: #fef3c7;
+      border-color: var(--accent);
+    }
+    /* [END TAG CHECKBOXES] */
+
+    /* Buttons */
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); margin-top: 6px; }
+
+    /* Product List */
+    .item-card { display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); padding: 12px 0; }
+    .item-card img { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; }
+    .item-meta { flex: 1; }
+    .item-actions { display: flex; gap: 6px; }
+    .btn-sm { padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+    .btn-edit { background: #e0f2fe; color: #0369a1; }
+    .btn-del { background: #fee2e2; color: var(--danger); }
+
+    #configBanner { background: #fef3c7; border: 1px solid #fde68a; border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 0.85rem; color: #92400e; }
+
+    /* Small tag pills shown in the item list */
+    .item-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .item-tag {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.6rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      text-transform: capitalize;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-container">
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- [HEADER] Brand + sync status badge                          -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div>
+        <h2>🔱 Mahadev Fashion Hub</h2>
+        <small style="color:var(--muted)">Admin Product & Inventory Studio</small>
+      </div>
+      <span id="syncStatusBadge" style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#166534; font-size:0.75rem; font-weight:600; padding:6px 10px; border-radius:6px;">🟢 Auto-Sync Active</span>
+    </div>
+    <!-- [END HEADER] -->
+
+    <div id="statusNotice" style="display:none;" class="card"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- [PRODUCT FORM] Add / edit product                            -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="card">
+      <h2 id="formTitle">✨ Add New Product</h2>
+      <p class="sub">Upload item photo and set price details</p>
+
+      <input type="hidden" id="editProductId" value="">
+
+      <div class="preview-grid" id="previewGrid">
+        <span id="previewPlaceholder">No Images Selected (max 5)</span>
+      </div>
+      <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelection(event)">
+
+      <label>Item Name</label>
+      <input type="text" id="pTitle" placeholder="e.g. Antique Matte Peacock Choker Set">
+
+      <div class="row">
+        <div>
+          <label>Category</label>
+          <select id="pCat">
+            <option value="Necklaces">Necklaces</option>
+            <option value="Earrings">Earrings</option>
+            <option value="Bangles">Bangles</option>
+            <option value="Rings">Rings</option>
+            <option value="Sarees">Sarees & Ethnic</option>
+            <option value="Ornaments">Hair Ornaments</option>
+            <option value="Accessories">Accessories</option>
+          </select>
+        </div>
+        <div>
+          <label>Subcategory</label>
+          <input type="text" id="pSubCat" placeholder="e.g. Choker, Jhumka">
+        </div>
+        <div>
+          <label>Free-text Badge (optional)</label>
+          <input type="text" id="pTag" placeholder="e.g. Limited Edition">
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════ -->
+      <!-- [TAG CHECKBOXES] Multi-select tags for storefront filters -->
+      <!-- ------------------------------------------------------- -->
+      <!-- These drive the filter chips on index.html:               -->
+      <!--   bestseller  → ⭐ Best Sellers                           -->
+      <!--   most_loved  → 💖 Most Loved                             -->
+      <!--   trending    → 🔥 Trending                               -->
+      <!--   new         → ✨ New                                    -->
+      <!--   sale        → 🏷️ Sale                                   -->
+      <!-- ═════════════════════════════════════════════════════════ -->
+      <label>Storefront Tags (pick any)</label>
+      <div class="tag-grid" id="tagGrid">
+        <label class="tag-option" data-tag="bestseller">
+          <input type="checkbox" value="bestseller"> ⭐ Bestseller
+        </label>
+        <label class="tag-option" data-tag="most_loved">
+          <input type="checkbox" value="most_loved"> 💖 Most Loved
+        </label>
+        <label class="tag-option" data-tag="trending">
+          <input type="checkbox" value="trending"> 🔥 Trending
+        </label>
+        <label class="tag-option" data-tag="new">
+          <input type="checkbox" value="new"> ✨ New
+        </label>
+        <label class="tag-option" data-tag="sale">
+          <input type="checkbox" value="sale"> 🏷️ Sale
+        </label>
+      </div>
+      <!-- [END TAG CHECKBOXES] -->
+
+      <div class="row">
+        <div>
+          <label>Selling Price (₹)</label>
+          <input type="number" id="pPrice" placeholder="1899">
+        </div>
+        <div>
+          <label>Original MRP (₹)</label>
+          <input type="number" id="pMrp" placeholder="3499">
+        </div>
+      </div>
+
+      <label>Short Description</label>
+      <textarea id="pDesc" rows="2" placeholder="e.g. Handcrafted brass necklace with matching jhumkas..."></textarea>
+
+      <button class="btn btn-primary" id="saveBtn" onclick="saveProduct()">Publish & Update Store</button>
+      <button class="btn btn-outline" id="cancelEditBtn" style="display:none;" onclick="resetForm()">Cancel Edit</button>
+    </div>
+    <!-- [END PRODUCT FORM] -->
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- [CATALOG LIST] Current live catalog                          -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="card">
+      <h2>📦 Store Catalog (<span id="countDisplay">0</span>)</h2>
+      <p class="sub">Live products currently visible to customers</p>
+
+      <div id="itemsContainer">Loading products...</div>
+    </div>
+    <!-- [END CATALOG LIST] -->
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- [CATEGORY MANAGER] Add Categories & Subcategories            -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="card">
+      <h2>🗂️ Category Manager</h2>
+      <p class="sub">Add new categories or subcategories for your store</p>
+
+      <div class="row">
+        <div>
+          <label>New Category</label>
+          <input type="text" id="newCatName" placeholder="e.g. Anklets">
+        </div>
+        <div>
+          <label>New Subcategory</label>
+          <input type="text" id="newSubCatName" placeholder="e.g. Payal">
+        </div>
+      </div>
+      <button class="btn btn-success" onclick="addCategory()">+ Add to Store</button>
+      
+      <div style="margin-top: 16px;">
+        <label>Current Categories & Subcategories</label>
+        <div id="categoryListDisplay" style="font-size: 0.85rem; color: var(--muted); line-height: 1.6;">
+          Loading...
+        </div>
+      </div>
+    </div>
+    <!-- [END CATEGORY MANAGER] -->
+
+  </div>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [STATE] Admin panel state                                   */
+    /* ═══════════════════════════════════════════════════════════ */
+    let productsList = [];
+    let currentImageFiles = [];   // array of File objects (max 5)
+    let existingImageUrls = [];   // URLs kept when editing (no new upload)
+    let storeCategories = {};     // { "Necklaces": ["Choker", "Long"] }
+    /* [END STATE] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [INIT] Boot admin                                            */
+    /* ═══════════════════════════════════════════════════════════ */
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchCatalog();
+      checkBackendHealth();
+      setupTagCheckboxes();
+      fetchCategories();
+    });
+    /* [END INIT] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [TAG CHECKBOXES] Visual checked state + change handling      */
+    /* ═══════════════════════════════════════════════════════════ */
+    function setupTagCheckboxes() {
+      document.querySelectorAll(".tag-option input[type='checkbox']").forEach(cb => {
+        cb.addEventListener("change", () => {
+          cb.closest(".tag-option").classList.toggle("checked", cb.checked);
+        });
+      });
+    }
+
+    function getSelectedTags() {
+      return Array.from(document.querySelectorAll(".tag-option input:checked"))
+                  .map(cb => cb.value);
+    }
+
+    function setSelectedTags(tags) {
+      document.querySelectorAll(".tag-option input[type='checkbox']").forEach(cb => {
+        cb.checked = tags.includes(cb.value);
+        cb.closest(".tag-option").classList.toggle("checked", cb.checked);
+      });
+    }
+    /* [END TAG CHECKBOXES] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [HEALTH] Backend ping                                        */
+    /* ═══════════════════════════════════════════════════════════ */
+    async function checkBackendHealth() {
+      const badge = document.getElementById("syncStatusBadge");
+      if (!badge) return;
+      try {
+        const res = await fetch("http://localhost:5000/health", { cache: "no-store" });
+        const data = await res.json();
+        if (data.ok && data.token_set) {
+          badge.style.background = "#dcfce7";
+          badge.style.color = "#166534";
+          badge.innerText = "🟢 Auto-Sync Active";
+        } else {
+          badge.style.background = "#fef3c7";
+          badge.style.color = "#92400e";
+          badge.innerText = "🟡 Backend up, no token";
+        }
+      } catch {
+        badge.style.background = "#fee2e2";
+        badge.style.color = "#991b1b";
+        badge.innerText = "🔴 Backend offline";
+      }
+    }
+    /* [END HEALTH] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [CATEGORIES] Manage Categories & Subcategories               */
+    /* ═══════════════════════════════════════════════════════════ */
+    async function fetchCategories() {
+      try {
+        const res = await fetch(`categories.json?_t=${Date.now()}`);
+        if (res.ok) {
+          storeCategories = await res.json();
+        } else {
+          // Fallback if categories.json doesn't exist yet
+          storeCategories = {
+            "Necklaces": ["Choker", "Long", "Pendant", "Set"],
+            "Earrings": ["Jhumka", "Studs", "Drops", "Hoops"],
+            "Bangles": ["Kada", "Set", "Bracelet"],
+            "Rings": ["Adjustable", "Statement"],
+            "Sarees": ["Silk", "Cotton", "Designer"],
+            "Ornaments": ["Maang Tikka", "Hair Pin"],
+            "Accessories": ["Bags", "Clutches", "Belts"]
+          };
+        }
+        renderCategories();
+        updateCategoryDropdown();
+      } catch (e) {
+        console.error("Could not load categories.json", e);
+      }
+    }
+
+    function renderCategories() {
+      const display = document.getElementById("categoryListDisplay");
+      if (!display) return;
+      
+      const html = Object.keys(storeCategories).map(cat => {
+        const subs = storeCategories[cat].join(", ");
+        return `<strong>${cat}</strong>: ${subs || "No subcategories"}`;
+      }).join("<br>");
+      
+      display.innerHTML = html || "No categories yet.";
+    }
+
+    function updateCategoryDropdown() {
+      const select = document.getElementById("pCat");
+      if (!select) return;
+      
+      const currentVal = select.value;
+      select.innerHTML = Object.keys(storeCategories).map(cat => 
+        `<option value="${cat}">${cat}</option>`
+      ).join("");
+      
+      if (currentVal && storeCategories[currentVal]) select.value = currentVal;
+    }
+
+    async function addCategory() {
+      const catInput = document.getElementById("newCatName").value.trim();
+      const subInput = document.getElementById("newSubCatName").value.trim();
+
+      if (!catInput && !subInput) return alert("Enter a category or subcategory name.");
+
+      if (catInput) {
+        if (!storeCategories[catInput]) storeCategories[catInput] = [];
+      }
+
+      if (subInput) {
+        const targetCat = catInput || document.getElementById("pCat").value;
+        if (!storeCategories[targetCat]) storeCategories[targetCat] = [];
+        if (!storeCategories[targetCat].includes(subInput)) {
+          storeCategories[targetCat].push(subInput);
+        }
+      }
+
+      document.getElementById("newCatName").value = "";
+      document.getElementById("newSubCatName").value = "";
+
+      renderCategories();
+      updateCategoryDropdown();
+      
+      await saveCategoriesToGitHub();
+    }
+
+    async function saveCategoriesToGitHub() {
+      const btn = document.querySelector('button[onclick="addCategory()"]');
+      const original = btn.innerText;
+      btn.innerText = "⏳ Saving...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("http://localhost:5000/save-categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(storeCategories)
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          btn.innerText = "✅ Saved!";
+          setTimeout(() => { btn.innerText = original; btn.disabled = false; }, 1500);
+        } else {
+          alert("❌ Failed to save: " + data.error);
+          btn.innerText = original;
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert("❌ Backend not running.");
+        btn.innerText = original;
+        btn.disabled = false;
+      }
+    }
+    /* [END CATEGORIES] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [FETCH] Load products.json                                   */
+    /* ═══════════════════════════════════════════════════════════ */
+    async function fetchCatalog() {
+      try {
+        const res = await fetch(`products.json?_t=${Date.now()}`);
+        if (!res.ok) throw new Error("products.json not found");
+        productsList = await res.json();
+
+        // Backwards compat: convert old single "tag" to "tags" array
+        productsList.forEach(p => {
+          if (!Array.isArray(p.tags)) {
+            p.tags = p.tag ? [String(p.tag).toLowerCase().replace(/\s+/g, "_")] : [];
+          }
+        });
+
+        renderCatalog();
+      } catch (e) {
+        document.getElementById("itemsContainer").innerHTML =
+          "<p style='color:var(--muted);'>Could not load products.json — run the backend sync script.</p>";
+      }
+    }
+    /* [END FETCH] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [IMAGE] Preview only (upload happens on save)                */
+    /* ═══════════════════════════════════════════════════════════ */
+    function handleImageSelection(event) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+
+      const remaining = 5 - currentImageFiles.length;
+      if (remaining <= 0) {
+        alert("Max 5 images per product.");
+        event.target.value = "";
+        return;
+      }
+
+      files.slice(0, remaining).forEach(f => currentImageFiles.push(f));
+      if (files.length > remaining) {
+        alert("Only first " + remaining + " added (max 5 total).");
+      }
+
+      event.target.value = "";
+      renderPreviewGrid();
+    }
+
+    function renderPreviewGrid() {
+      const grid = document.getElementById("previewGrid");
+      const ph = document.getElementById("previewPlaceholder");
+
+      const hasAny = currentImageFiles.length > 0 || existingImageUrls.length > 0;
+      if (!hasAny) {
+        grid.innerHTML = '<span id="previewPlaceholder">No Images Selected (max 5)</span>';
+        return;
+      }
+
+      const existingHTML = existingImageUrls.map((url, i) => `
+        <div class="preview-item">
+          <img src="${url}" alt="">
+          <button type="button" class="preview-remove" onclick="removeExistingImage(${i})">×</button>
+        </div>
+      `).join("");
+
+      const newHTML = currentImageFiles.map((file, i) => `
+        <div class="preview-item">
+          <img src="${URL.createObjectURL(file)}" alt="">
+          <button type="button" class="preview-remove" onclick="removeNewImage(${i})">×</button>
+        </div>
+      `).join("");
+
+      grid.innerHTML = existingHTML + newHTML;
+    }
+
+    function removeExistingImage(idx) {
+      existingImageUrls.splice(idx, 1);
+      renderPreviewGrid();
+    }
+
+    function removeNewImage(idx) {
+      currentImageFiles.splice(idx, 1);
+      renderPreviewGrid();
+    }
+    /* [END IMAGE] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [RENDER] Catalog list                                        */
+    /* ═══════════════════════════════════════════════════════════ */
+    function renderCatalog() {
+      document.getElementById("countDisplay").innerText = productsList.length;
+      const container = document.getElementById("itemsContainer");
+
+      if (productsList.length === 0) {
+        container.innerHTML = "<p style='color:var(--muted); padding:10px 0;'>No items in catalog.</p>";
+        return;
+      }
+
+      container.innerHTML = productsList.map((item, index) => {
+        const tagPills = (item.tags || []).map(t =>
+          `<span class="item-tag">${t.replace("_", " ")}</span>`
+        ).join("");
+
+        const thumb = (item.images && item.images[0]) || item.image || "";
+        return `
+        <div class="item-card">
+          <img src="${thumb}" alt="">
+          <div class="item-meta">
+            <strong>${item.title}</strong>
+            <div style="color:var(--muted); font-size:0.75rem;">₹${item.price} • ${item.category}</div>
+            ${tagPills ? `<div class="item-tags">${tagPills}</div>` : ""}
+          </div>
+          <div class="item-actions">
+            <button class="btn-sm btn-edit" onclick="editProduct(${index})">Edit</button>
+            <button class="btn-sm btn-del" onclick="deleteProduct(${index})">Delete</button>
+          </div>
+        </div>
+      `;
+      }).join("");
+    }
+    /* [END RENDER] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [SAVE] Upload image (if new) + save product                  */
+    /* ═══════════════════════════════════════════════════════════ */
+    async function saveProduct() {
+      const title = document.getElementById("pTitle").value.trim();
+      const price = Number(document.getElementById("pPrice").value);
+      const mrp   = Number(document.getElementById("pMrp").value) || price;
+      const category = document.getElementById("pCat").value;
+      const subcategory = document.getElementById("pSubCat").value.trim();
+      const freeTag  = document.getElementById("pTag").value.trim();
+      const desc  = document.getElementById("pDesc").value.trim();
+      const editId = document.getElementById("editProductId").value;
+      const saveBtn = document.getElementById("saveBtn");
+      const original = saveBtn.innerText;
+
+      if (!title || !price) {
+        alert("Please enter product name and selling price.");
+        return;
+      }
+
+      const selectedTags = getSelectedTags();
+
+      // 1. Upload new images (if any were picked)
+      let uploadedUrls = [];
+      if (currentImageFiles.length > 0) {
+        saveBtn.innerText = "⏳ Uploading " + currentImageFiles.length + " image(s)...";
+        saveBtn.disabled = true;
+        try {
+          const form = new FormData();
+          currentImageFiles.forEach(f => form.append("file", f));
+          form.append("category", category);
+          form.append("product_id", editId || ("AJ-" + Date.now().toString().slice(-4)));
+          const upRes = await fetch("http://localhost:5000/upload", {
+            method: "POST",
+            body: form
+          });
+          const upData = await upRes.json();
+          if (!upData.ok) throw new Error(upData.error);
+          uploadedUrls = upData.urls || [upData.url];
+        } catch (e) {
+          alert("❌ Image upload failed: " + e.message);
+          saveBtn.innerText = original;
+          saveBtn.disabled = false;
+          return;
+        }
+      }
+
+      // Combine: newly uploaded + kept existing (edit mode)
+      const finalImages = [...uploadedUrls, ...existingImageUrls];
+
+      if (finalImages.length === 0) {
+        alert("Please select at least one image.");
+        saveBtn.innerText = original;
+        saveBtn.disabled = false;
+        return;
+      }
+
+      // 2. Build product object
+      const productObj = {
+        id: editId || "AJ-" + Date.now().toString().slice(-4),
+        title,
+        price,
+        originalPrice: mrp,
+        category,
+        subcategory,
+        tag: freeTag,
+        tags: selectedTags,
+        description: desc,
+        image: finalImages[0],       // backwards compat (first image)
+        images: finalImages          // new multi-image array
+      };
+
+      if (editId) {
+        const idx = productsList.findIndex(p => p.id === editId);
+        if (idx !== -1) productsList[idx] = productObj;
+      } else {
+        productsList.unshift(productObj);
+      }
+
+      renderCatalog();
+      resetForm();
+      await pushChangesToGitHub("Update product: " + title);
+    }
+    /* [END SAVE] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [EDIT] Load product into form                                */
+    /* ═══════════════════════════════════════════════════════════ */
+    function editProduct(index) {
+      const p = productsList[index];
+      currentImageFiles = [];
+      existingImageUrls = (p.images && p.images.length) ? [...p.images]
+                        : (p.image ? [p.image] : []);
+
+      document.getElementById("formTitle").innerText = "✏️ Edit Product";
+      document.getElementById("editProductId").value = p.id;
+      document.getElementById("pTitle").value = p.title;
+      document.getElementById("pPrice").value = p.price;
+      document.getElementById("pMrp").value   = p.originalPrice;
+      document.getElementById("pCat").value   = p.category;
+      document.getElementById("pSubCat").value = p.subcategory || "";
+      document.getElementById("pTag").value   = p.tag || "";
+      document.getElementById("pDesc").value  = p.description;
+
+      setSelectedTags(p.tags || []);
+      renderPreviewGrid();
+
+      document.getElementById("saveBtn").innerText = "Update & Sync";
+      document.getElementById("cancelEditBtn").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    /* [END EDIT] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [RESET] Clear form                                           */
+    /* ═══════════════════════════════════════════════════════════ */
+    function resetForm() {
+      document.getElementById("formTitle").innerText = "✨ Add New Product";
+      document.getElementById("editProductId").value = "";
+      document.getElementById("pTitle").value = "";
+      document.getElementById("pPrice").value = "";
+      document.getElementById("pMrp").value   = "";
+      document.getElementById("pTag").value   = "";
+      document.getElementById("pSubCat").value = "";
+      document.getElementById("pDesc").value  = "";
+      document.getElementById("imageInput").value = "";
+      document.getElementById("saveBtn").innerText = "Publish & Update Store";
+      document.getElementById("cancelEditBtn").style.display = "none";
+      currentImageFiles = [];
+      existingImageUrls = [];
+      setSelectedTags([]);
+      renderPreviewGrid();
+    }
+    /* [END RESET] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [DELETE] Remove product                                      */
+    /* ═══════════════════════════════════════════════════════════ */
+    async function deleteProduct(index) {
+      const title = productsList[index].title;
+      if (confirm(`Are you sure you want to delete "${title}"?`)) {
+        productsList.splice(index, 1);
+        renderCatalog();
+        await pushChangesToGitHub("Deleted product: " + title);
+      }
+    }
+    /* [END DELETE] */
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [PUSH] Send catalog to backend → GitHub                      */
+    /* ═══════════════════════════════════════════════════════════ */
+    async function pushChangesToGitHub(commitMessage) {
+      const saveBtn = document.getElementById("saveBtn");
+      const original = saveBtn.innerText;
+      saveBtn.innerText = "⏳ Pushing to GitHub...";
+      saveBtn.disabled = true;
+
+      try {
+        const res = await fetch("http://localhost:5000/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(productsList)
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          saveBtn.innerText = "✅ Live!";
+          setTimeout(() => {
+            saveBtn.innerText = original;
+            saveBtn.disabled = false;
+          }, 1500);
+        } else {
+          alert("❌ Sync failed: " + (data.error || "Unknown error"));
+          saveBtn.innerText = original;
+          saveBtn.disabled = false;
+        }
+      } catch (e) {
+        alert("❌ Backend not running.\n\nStart it with: start.bat\n\nError: " + e.message);
+        saveBtn.innerText = original;
+        saveBtn.disabled = false;
+      }
+    }
+    /* [END PUSH] */
+  </script>
+</body>
+</html>

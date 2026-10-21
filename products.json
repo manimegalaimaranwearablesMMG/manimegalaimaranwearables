@@ -1,0 +1,75 @@
+[
+  {
+    "id": "AJ-5532",
+    "title": "asdfsdafasdf",
+    "price": 51,
+    "originalPrice": 7889,
+    "category": "Sarees",
+    "subcategory": "Poonam",
+    "tag": "agdsgaasg",
+    "tags": [
+      "new"
+    ],
+    "description": "aaaaaagsdas",
+    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1792368644/ma-fashion/Sarees/AJ-9695/z6t9y7wbtsckblb1v7dw.png",
+    "images": [
+      "https://res.cloudinary.com/ma-fashion/image/upload/v1792368644/ma-fashion/Sarees/AJ-9695/z6t9y7wbtsckblb1v7dw.png"
+    ]
+  },
+  {
+    "id": "AJ-8330",
+    "title": "taetae",
+    "price": 65,
+    "originalPrice": 89,
+    "category": "Accessories",
+    "tag": "aeatwea",
+    "tags": [
+      "most_loved"
+    ],
+    "description": "gasd",
+    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1792367887/ma-fashion/Accessories/AJ-1856/rxmutqqlyt6tve4shtom.png",
+    "images": [
+      "https://res.cloudinary.com/ma-fashion/image/upload/v1792367887/ma-fashion/Accessories/AJ-1856/rxmutqqlyt6tve4shtom.png"
+    ]
+  },
+  {
+    "id": "AJ-7544",
+    "title": "AAFAFAFA",
+    "price": 822,
+    "originalPrice": 5158,
+    "category": "Sarees",
+    "tag": "ADFAFASA",
+    "tags": [],
+    "description": "FAFAEFEAFAEA",
+    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1791939156/ma-fashion/Sarees/AJ-0296/dduhbmuqppw602xs55ac.png",
+    "images": [
+      "https://res.cloudinary.com/ma-fashion/image/upload/v1791939156/ma-fashion/Sarees/AJ-0296/dduhbmuqppw602xs55ac.png"
+    ]
+  },
+  {
+    "id": "AJ-1343",
+    "title": "AGA",
+    "price": 12,
+    "originalPrice": 34,
+    "category": "Necklaces",
+    "tag": "GAD",
+    "tags": [
+      "bestseller"
+    ],
+    "description": "AHAG",
+    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1791460115/ma-fashion/Scan10003-150kb.jpg"
+  },
+  {
+    "id": "AJ-2208",
+    "title": "sdf",
+    "price": 9,
+    "originalPrice": 23,
+    "category": "Necklaces",
+    "tag": "awgt",
+    "description": "asg",
+    "image": "https://res.cloudinary.com/ma-fashion/image/upload/v1791451786/ma-fashion/IMG-20260908-WA0012.jpg",
+    "tags": [
+      "awgt"
+    ]
+  }
+]
