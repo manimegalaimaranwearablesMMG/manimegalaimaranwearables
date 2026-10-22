@@ -8,6 +8,13 @@ from datetime import datetime
 # Directories to skip during the walk
 SKIP_DIRS = {".git", "__pycache__", "node_modules", ".vscode", ".idea"}
 
+# Files that must NEVER be included in the backup (they contain secrets)
+SKIP_FILES = {".env", "MASTER_BACKUP.txt", "patch.txt", "pending_catalog.json"}
+
+def _is_skipped(path):
+    name = os.path.basename(path)
+    return name in SKIP_FILES
+
 # Files at root that MUST appear first (in this exact order)
 ROOT_ORDER = [
     
@@ -34,7 +41,7 @@ def collect_files():
 
     # 2. Everything else at root
     for f in sorted(os.listdir(".")):
-        if os.path.isfile(f) and os.path.normpath(f) not in seen:
+        if os.path.isfile(f) and os.path.normpath(f) not in seen and not _is_skipped(f):
             ordered.append(f)
             seen.add(os.path.normpath(f))
 
@@ -43,7 +50,7 @@ def collect_files():
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
         for f in sorted(files):
             path = os.path.normpath(os.path.join(root, f))
-            if path not in seen:
+            if path not in seen and not _is_skipped(path):
                 ordered.append(path)
                 seen.add(path)
 
