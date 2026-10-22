@@ -195,6 +195,7 @@ def git_push(commit_msg="Update store via auto-patch"):
         subprocess.run(["git", "commit", "-m", commit_msg], check=True)
         subprocess.run(["git", "push", "origin", f"HEAD:{branch}"], check=True)
         print("🎉 Pushed! GitHub Pages live in ~20s.")
+        
     except subprocess.CalledProcessError as e:
         print("❌ Git error:", e)
 
