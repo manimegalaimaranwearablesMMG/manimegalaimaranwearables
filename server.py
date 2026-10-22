@@ -216,6 +216,66 @@ class Handler(SimpleHTTPRequestHandler):
                 self._json(500, {"ok": False, "error": str(e)})
             return
                 
+        # ── Upload logo to Cloudinary (folder: ma-fashion/logo) ──
+        if self.path == "/upload-logo":
+            try:
+                content_type = self.headers.get("Content-Type", "")
+                content_length = int(self.headers.get("Content-Length", 0))
+
+                if "boundary=" not in content_type:
+                    self._json(400, {"ok": False, "error": "Missing boundary"})
+                    return
+
+                boundary = content_type.split("boundary=")[1].strip()
+                if boundary.startswith('"') and boundary.endswith('"'):
+                    boundary = boundary[1:-1]
+
+                from multipart import MultipartParser
+                import io
+
+                body = self.rfile.read(content_length)
+                parser = MultipartParser(io.BytesIO(body), boundary, charset="latin-1")
+
+                uploaded = []
+                for part in parser:
+                    if part.name == "file":
+                        raw = part.value if isinstance(part.value, bytes) else part.value.encode('latin-1')
+                        fname = (part.filename or "logo.png").replace('\x00', '').strip()
+                        if isinstance(fname, bytes):
+                            fname = fname.decode('latin-1', errors='ignore')
+                        if not fname:
+                            fname = "logo.png"
+                        if '.' not in fname:
+                            fname = fname + '.png'
+                        uploaded.append((raw, fname))
+
+                if not uploaded:
+                    self._json(400, {"ok": False, "error": "No logo file received"})
+                    return
+
+                if len(uploaded) > 1:
+                    self._json(400, {"ok": False, "error": "Only 1 logo at a time"})
+                    return
+
+                raw, fname = uploaded[0]
+                base = fname.rsplit('.', 1)[0]
+                ext  = fname.rsplit('.', 1)[-1].lower()
+
+                result = cloudinary.uploader.upload(
+                    raw,
+                    asset_folder="ma-fashion/logo",
+                    use_asset_folder_as_public_id_prefix=True,
+                    public_id=base,
+                    overwrite=True,
+                    resource_type="image"
+                )
+                url = result["secure_url"]
+                self._json(200, {"ok": True, "url": url, "public_id": result.get("public_id", "")})
+
+            except Exception as e:
+                self._json(500, {"ok": False, "error": str(e)})
+            return
+
         # ── Save categories → local + GitHub (auto) ──
         if self.path == "/save-categories":
             length = int(self.headers.get("Content-Length", 0))

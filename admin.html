@@ -167,6 +167,27 @@
     <div id="statusNotice" style="display:none;" class="card"></div>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- [BRAND LOGO] Upload logo → Cloudinary folder "logo"         -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="card">
+      <h2>🔱 Brand Logo</h2>
+      <p class="sub">Upload your store logo — saved to Cloudinary folder <code>ma-fashion/logo</code></p>
+
+      <div class="preview-grid" id="logoPreview" style="min-height:100px; grid-template-columns: 1fr;">
+        <span id="logoPlaceholder">No Logo Uploaded</span>
+      </div>
+
+      <input type="file" id="logoInput" accept="image/*" onchange="uploadLogo(event)">
+
+      <label>Current Logo URL</label>
+      <input type="text" id="logoUrlDisplay" readonly placeholder="Upload a logo to get the URL">
+
+      <button class="btn btn-success" onclick="copyLogoUrl()">📋 Copy Logo URL</button>
+      <button class="btn btn-outline" onclick="openLogoInNewTab()">🔗 Open in New Tab</button>
+    </div>
+    <!-- [END BRAND LOGO] -->
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
     <!-- [PRODUCT FORM] Add / edit product                            -->
     <!-- ═══════════════════════════════════════════════════════════ -->
     <div class="card">
@@ -314,6 +335,7 @@
       checkBackendHealth();
       setupTagCheckboxes();
       fetchCategories();
+      loadSavedLogo();
     });
     /* [END INIT] */
 
@@ -502,6 +524,75 @@
     /* ═══════════════════════════════════════════════════════════ */
     /* [IMAGE] Preview only (upload happens on save)                */
     /* ═══════════════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════════════ */
+    /* [LOGO] Upload logo → Cloudinary folder "logo"                */
+    /* ═══════════════════════════════════════════════════════════ */
+    const LOGO_STORAGE_KEY = "mm_logo_url";
+
+    function uploadLogo(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const preview = document.getElementById("logoPreview");
+      preview.innerHTML = '<span>⏳ Uploading…</span>';
+
+      const form = new FormData();
+      form.append("file", file);
+
+      fetch("http://localhost:5000/upload-logo", { method: "POST", body: form })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) throw new Error(data.error || "Upload failed");
+          renderLogoPreview(data.url);
+          try { localStorage.setItem(LOGO_STORAGE_KEY, data.url); } catch(e) {}
+          event.target.value = "";
+          alert("✅ Logo uploaded!\n\nCopy the URL below and paste it into index.html where it says YOUR_LOGO_URL_HERE.");
+        })
+        .catch(err => {
+          preview.innerHTML = '<span id="logoPlaceholder">No Logo Uploaded</span>';
+          alert("❌ Upload failed: " + err.message + "\n\nIs the backend running? Run 2.start.bat.");
+          event.target.value = "";
+        });
+    }
+
+    function renderLogoPreview(url) {
+      const preview = document.getElementById("logoPreview");
+      const urlBox = document.getElementById("logoUrlDisplay");
+      if (!url) {
+        preview.innerHTML = '<span id="logoPlaceholder">No Logo Uploaded</span>';
+        if (urlBox) urlBox.value = "";
+        return;
+      }
+      preview.innerHTML = `<div class="preview-item" style="aspect-ratio: auto; max-height:180px; background:#fafaf9; display:flex; align-items:center; justify-content:center;">
+        <img src="${url}" alt="Logo" style="max-width:100%; max-height:180px; object-fit:contain; width:auto; height:auto;">
+      </div>`;
+      if (urlBox) urlBox.value = url;
+    }
+
+    function loadSavedLogo() {
+      try {
+        const url = localStorage.getItem(LOGO_STORAGE_KEY);
+        if (url) renderLogoPreview(url);
+      } catch(e) {}
+    }
+
+    function copyLogoUrl() {
+      const box = document.getElementById("logoUrlDisplay");
+      if (!box || !box.value) return alert("Upload a logo first.");
+      box.select();
+      box.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(box.value)
+        .then(() => alert("✅ URL copied:\n\n" + box.value))
+        .catch(() => { document.execCommand("copy"); alert("✅ URL copied."); });
+    }
+
+    function openLogoInNewTab() {
+      const box = document.getElementById("logoUrlDisplay");
+      if (!box || !box.value) return alert("Upload a logo first.");
+      window.open(box.value, "_blank");
+    }
+    /* [END LOGO] */
+
     function handleImageSelection(event) {
       const files = Array.from(event.target.files || []);
       if (!files.length) return;
