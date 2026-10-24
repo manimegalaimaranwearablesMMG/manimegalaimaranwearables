@@ -178,33 +178,54 @@ class Handler(SimpleHTTPRequestHandler):
                     self._json(400, {"ok": False, "error": "Max 5 images per product"})
                     return
                 
-                # Read optional category + product_id from form fields
-                # (sent by admin.html alongside the file inputs)
+                # Read optional category from form fields
                 category = ""
-                product_id = ""
                 for part in parser:
                     if part.name == "category":
                         category = (part.value or "").strip() if not isinstance(part.value, bytes) else part.value.decode("latin-1").strip()
-                    elif part.name == "product_id":
-                        product_id = (part.value or "").strip() if not isinstance(part.value, bytes) else part.value.decode("latin-1").strip()
                 
-                # Sanitize for folder use
+                # Sanitize
                 category = "".join(c for c in category if c.isalnum() or c in "-_")
-                product_id = "".join(c for c in product_id if c.isalnum() or c in "-_")
-                
                 if not category:
                     category = "Uncategorized"
-                if not product_id:
-                    product_id = "misc"
+
+                # 1. Generate Prefix (e.g., Sarees -> SS)
+                cat_lower = category.lower()
+                if "saree" in cat_lower: prefix = "SS"
+                elif "necklace" in cat_lower: prefix = "NK"
+                elif "earring" in cat_lower: prefix = "ER"
+                elif "bangle" in cat_lower: prefix = "BG"
+                elif "ring" in cat_lower: prefix = "RG"
+                elif "ornament" in cat_lower: prefix = "OR"
+                elif "accessor" in cat_lower: prefix = "AC"
+                else: prefix = "MM"
+
+                # 2. Generate Date (e.g., 261024)
+                import datetime
+                now = datetime.datetime.now()
+                yy = str(now.year)[-2:]
+                mm = f"{now.month:02d}"
+                dd = f"{now.day:02d}"
                 
-                folder_path = f"ma-fashion/{category}/{product_id}"
-                
+                # 3. Generate Count (01, 02, etc.)
+                base_id = f"{prefix}{yy}{mm}{dd}"
+                count = 1
+                while True:
+                    product_id = f"{base_id}{count:02d}"
+                    folder_path = f"mmw/{category}"
+                    try:
+                        # Check if ID exists to prevent overwrite
+                        cloudinary.api.resource(f"{folder_path}/{product_id}")
+                        count += 1 
+                    except Exception:
+                        break 
                 
                 urls = []
                 for raw, fname in uploaded:
                     result = cloudinary.uploader.upload(
                         raw,
                         folder=folder_path,
+                        public_id=product_id,
                         overwrite=False,
                         resource_type="image"
                     )
@@ -263,7 +284,7 @@ class Handler(SimpleHTTPRequestHandler):
 
                 result = cloudinary.uploader.upload(
                     raw,
-                    asset_folder="ma-fashion/logo",
+                    asset_folder="mmw/logo",
                     use_asset_folder_as_public_id_prefix=True,
                     public_id=base,
                     overwrite=True,
