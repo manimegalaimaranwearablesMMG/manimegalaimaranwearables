@@ -221,11 +221,11 @@ class Handler(SimpleHTTPRequestHandler):
                         break 
                 
                 urls = []
-                for raw, fname in uploaded:
+                for i, (raw, fname) in enumerate(uploaded):
                     result = cloudinary.uploader.upload(
                         raw,
                         folder=folder_path,
-                        public_id=product_id,
+                        public_id=f"{product_id}_{i}",
                         overwrite=False,
                         resource_type="image"
                     )
