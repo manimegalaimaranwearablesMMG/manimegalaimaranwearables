@@ -199,12 +199,12 @@ class Handler(SimpleHTTPRequestHandler):
                 
                 folder_path = f"ma-fashion/{category}/{product_id}"
                 
+                
                 urls = []
                 for raw, fname in uploaded:
                     result = cloudinary.uploader.upload(
                         raw,
-                        asset_folder=folder_path,
-                        use_asset_folder_as_public_id_prefix=True,
+                        folder=folder_path,
                         overwrite=False,
                         resource_type="image"
                     )
