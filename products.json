@@ -1,5 +1,25 @@
 [
   {
+    "id": "AJ-9848",
+    "title": "Teal & Royal Blue Soft Silk Saree with Gold Zari Floral Border",
+    "price": 749,
+    "originalPrice": 899,
+    "category": "Sarees",
+    "subcategory": "Silk",
+    "tag": "",
+    "tags": [
+      "new"
+    ],
+    "description": "Embrace timeless elegance with this stunning Teal and Royal Blue Soft Silk saree. Featuring a rich, traditional gold zari border with intricate floral and paisley motifs, this saree is lightweight, breathable, and easy to drape. Perfect for festivals, weddings, and grand family gatherings.",
+    "image": "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792874963/mmw/Sarees/SS2610257149_0.png",
+    "images": [
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792874963/mmw/Sarees/SS2610257149_0.png",
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792874965/mmw/Sarees/SS2610257149_1.png",
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792874967/mmw/Sarees/SS2610257149_2.png",
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792874969/mmw/Sarees/SS2610257149_3.png"
+    ]
+  },
+  {
     "id": "AJ-8011",
     "title": "Radiant Pink Rhinestone Silk Saree",
     "price": 649,
