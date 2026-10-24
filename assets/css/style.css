@@ -108,17 +108,19 @@ body {
 .header-stack {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: flex-end;
+  gap: 6px;
 }
 .header-stack .icon-btn {
   padding: 2px;
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 
 .brand h1 {
   line-height: 1.1;
-  margin-bottom: 2px;
-  font-size: var(--fs-title);
+  margin-bottom: 4px;
+  font-size: calc(var(--fs-title) * 1.5); /* 1.5x Font Size */
+  letter-spacing: 0.5px;
   letter-spacing: clamp(0.5px, 0.3vw, 2px);
   background: linear-gradient(135deg, var(--primary-deep), var(--gold-glow), var(--primary-deep));
   background-size: 200% auto;
