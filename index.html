@@ -31,14 +31,14 @@
       </a>
     </nav>
   </aside>
-  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="document.getElementById('sidebar').classList.remove('open'); this.classList.remove('open');"></div>
   <!-- [END SIDEBAR] -->
 
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- [HEADER] Top app navigation                                    -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <header class="app-header">
-    <button class="hamburger" id="hamburgerBtn" aria-label="Menu">☰</button>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Menu" onclick="document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarBackdrop').classList.add('open');">☰</button>
     <div class="brand">
       <!-- [LOGO] Replace src with your Cloudinary logo URL.            -->
       <!-- Supported: PNG, JPG, GIF, animated WebP, MP4 (video).       -->
@@ -55,7 +55,7 @@
       <span class="logo-icon-fallback">✨</span>
       <div>
         <h1>Manimegalai Maran<br>Wearables</h1>
-        <small>Ethnic Wardrobe , Jewels & ACCESSORIES</small>
+        <small>Ethnic Wardrobe · Jewels & Accessories</small>
       </div>
     </div>
     <div class="header-actions">
@@ -63,8 +63,10 @@
         <button class="cart-trigger" id="cartOpenBtn" aria-label="Shopping Cart">
           🛒 <span class="cart-counter" id="cartCount">0</span>
         </button>
-        <button class="icon-btn" id="searchToggle" aria-label="Search">🔍</button>
-        <button class="icon-btn" id="loginBtn" aria-label="Login">👤</button>
+        <div class="icon-row">
+          <button class="icon-btn" id="searchToggle" aria-label="Search">🔍</button>
+          <button class="icon-btn" id="loginBtn" aria-label="Login">👤</button>
+        </div>
       </div>
     </div>
   </header>
