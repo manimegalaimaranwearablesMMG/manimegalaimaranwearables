@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "id": "AJ-5360",
+    "title": "Royal Blue & Magenta Soft Silk Saree with Gold Zari",
+    "price": 799,
+    "originalPrice": 999,
+    "category": "Sarees",
+    "subcategory": "Silk",
+    "tag": "Premium Zari",
+    "tags": [
+      "new"
+    ],
+    "description": "Drape yourself in tradition with this exquisite Royal Blue Soft Silk saree. Featuring a striking contrast magenta border with intricate gold zari weaving and traditional paisley motifs throughout. Lightweight, easy to drape, and perfect for festive occasions, weddings, and elegant gatherings.",
+    "image": "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792873932/mmw/Sarees/SS2610254339_0.png",
+    "images": [
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792873932/mmw/Sarees/SS2610254339_0.png",
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792873936/mmw/Sarees/SS2610254339_1.jpg",
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792873940/mmw/Sarees/SS2610254339_2.jpg",
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792873942/mmw/Sarees/SS2610254339_3.png",
+      "https://res.cloudinary.com/sxbcmo4c/image/upload/v1792873944/mmw/Sarees/SS2610254339_4.png"
+    ]
+  }
+]
